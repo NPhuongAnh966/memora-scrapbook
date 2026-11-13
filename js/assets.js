@@ -257,6 +257,14 @@
       defaultFrame: 'minimal',
       iconSvg: `<svg viewBox="0 0 36 46" width="28"><rect x="3" y="5" width="30" height="36" rx="2" fill="#C8D2C0"/><rect x="6" y="31" width="24" height="6" rx="1" fill="#FFFDF7"/></svg>`,
     },
+    {
+      id: 'layout-free',
+      name: 'Trang Trống Tự Do',
+      slots: 0,
+      hasNote: false,
+      defaultFrame: 'polaroid',
+      iconSvg: `<svg viewBox="0 0 36 46" width="28"><rect x="3" y="5" width="30" height="36" rx="2" fill="none" stroke="#B89B7B" stroke-width="1.5" stroke-dasharray="3 2"/><path d="M18 16 V28 M12 22 H24" stroke="#846E5C" stroke-width="2" stroke-linecap="round"/></svg>`,
+    },
   ];
 
   /**

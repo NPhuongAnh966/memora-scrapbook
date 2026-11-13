@@ -183,11 +183,25 @@
     const avatarEl = document.getElementById('headerAvatar');
     const nameEl = document.getElementById('headerUserName');
     const loginBtn = document.getElementById('headerLoginBtn');
+    const userPill = document.getElementById('headerUserPill');
 
-    const initials = (profile.name || 'M').trim().charAt(0).toUpperCase();
-    avatarEl.textContent = initials;
-    nameEl.textContent = profile.name || 'Khách';
-    loginBtn.textContent = profile.loggedIn ? 'Hồ sơ' : 'Đăng nhập';
+    const isLoggedIn = Boolean(profile && profile.loggedIn && profile.name && profile.name.trim());
+
+    if (userPill) {
+      userPill.classList.toggle('hidden', !isLoggedIn);
+    }
+
+    if (isLoggedIn) {
+      const name = profile.name.trim();
+      const initials = name.charAt(0).toUpperCase();
+      if (avatarEl) avatarEl.textContent = initials;
+      if (nameEl) nameEl.textContent = name;
+      if (loginBtn) loginBtn.textContent = 'Đăng xuất';
+    } else {
+      if (avatarEl) avatarEl.textContent = '';
+      if (nameEl) nameEl.textContent = '';
+      if (loginBtn) loginBtn.textContent = 'Đăng nhập';
+    }
   }
 
   function renderBooksGrid(albums, filter = 'all', handlers = {}) {
@@ -387,17 +401,54 @@
 
   function openAuthModal(profile, onSaveProfile) {
     const modal = document.getElementById('authModal');
-    document.getElementById('authNameInput').value = profile.name || '';
-    document.getElementById('authTaglineInput').value = profile.tagline || '';
-    modal.classList.remove('hidden');
+    const nameInput = document.getElementById('authNameInput');
+    const taglineInput = document.getElementById('authTaglineInput');
+    const logoutBtn = document.getElementById('authLogoutBtn');
 
-    document.getElementById('authSaveBtn').onclick = () => {
-      const name = document.getElementById('authNameInput').value.trim() || 'Minh Anh';
-      const tagline = document.getElementById('authTaglineInput').value.trim();
+    const isLoggedIn = Boolean(profile && profile.loggedIn && profile.name && profile.name.trim());
+    nameInput.value = isLoggedIn ? profile.name : '';
+    taglineInput.value = isLoggedIn ? (profile.tagline || '') : '';
+
+    if (logoutBtn) {
+      logoutBtn.classList.toggle('hidden', !isLoggedIn);
+      logoutBtn.onclick = () => {
+        const updated = { name: '', tagline: '', loggedIn: false };
+        onSaveProfile(updated);
+        modal.classList.add('hidden');
+        PTB.UI.showToast('Đã đăng xuất tài khoản.');
+      };
+    }
+
+    modal.classList.remove('hidden');
+    nameInput.focus();
+
+    const handleSave = () => {
+      const name = nameInput.value.trim();
+      if (!name) {
+        PTB.UI.showToast('Vui lòng nhập tên hiển thị của bạn.');
+        nameInput.focus();
+        return;
+      }
+      const tagline = taglineInput.value.trim();
       const updated = { ...profile, name, tagline, loggedIn: true };
       onSaveProfile(updated);
       modal.classList.add('hidden');
       PTB.UI.showToast(`Chào mừng ${name} quay lại bàn kỷ niệm!`);
+    };
+
+    document.getElementById('authSaveBtn').onclick = handleSave;
+
+    nameInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    taglineInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSave();
+      }
     };
   }
 
@@ -405,6 +456,9 @@
     const modal = document.getElementById('authModal');
     document.getElementById('authCloseBtn').addEventListener('click', () => modal.classList.add('hidden'));
     document.getElementById('authCancelBtn').addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
   }
 
   let passwordModalState = null;
@@ -971,6 +1025,155 @@
     });
   }
 
+  function initHeroCustomPhotos() {
+    const leftImg = document.getElementById('heroPolaroidImgLeft');
+    const rightImg = document.getElementById('heroPolaroidImgRight');
+    if (!leftImg || !rightImg) return;
+
+    const leftInput = document.getElementById('heroPhotoInputLeft');
+    const rightInput = document.getElementById('heroPhotoInputRight');
+    const leftResetBtn = document.getElementById('heroResetLeftBtn');
+    const rightResetBtn = document.getElementById('heroResetRightBtn');
+    const leftCap = document.getElementById('heroCapLeft');
+    const rightCap = document.getElementById('heroCapRight');
+
+    const defaultLeftSvg = leftImg.innerHTML;
+    const defaultRightSvg = rightImg.innerHTML;
+    const defaultLeftCap = 'our summer';
+    const defaultRightCap = 'best day ever!';
+
+    const applyPhotos = () => {
+      const saved = PTB.Storage.getHeroCustomPhotos();
+      if (saved.left) {
+        leftImg.innerHTML =
+          `<img src="${saved.left}" alt="Our Summer" class="hero-custom-uploaded-img" />` +
+          `<div class="hero-photo-hover-overlay"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Thay ảnh</span></div>`;
+        if (leftResetBtn) leftResetBtn.classList.remove('hidden');
+      } else {
+        leftImg.innerHTML = defaultLeftSvg;
+        if (leftResetBtn) leftResetBtn.classList.add('hidden');
+      }
+      if (saved.capLeft && leftCap) {
+        leftCap.textContent = saved.capLeft;
+      }
+
+      if (saved.right) {
+        rightImg.innerHTML =
+          `<img src="${saved.right}" alt="Best Day Ever" class="hero-custom-uploaded-img" />` +
+          `<div class="hero-photo-hover-overlay"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Thay ảnh</span></div>`;
+        if (rightResetBtn) rightResetBtn.classList.remove('hidden');
+      } else {
+        rightImg.innerHTML = defaultRightSvg;
+        if (rightResetBtn) rightResetBtn.classList.add('hidden');
+      }
+      if (saved.capRight && rightCap) {
+        rightCap.textContent = saved.capRight;
+      }
+    };
+
+    applyPhotos();
+
+    const handleFileUpload = async (file, side) => {
+      if (!file) return;
+      try {
+        const compressed = await PTB.Storage.compressImageFile(file, 900, 0.88);
+        if (side === 'left') {
+          PTB.Storage.saveHeroCustomPhotos({ left: compressed });
+          PTB.UI.showToast('Đã gắn ảnh vào khung bên trái ✨');
+        } else {
+          PTB.Storage.saveHeroCustomPhotos({ right: compressed });
+          PTB.UI.showToast('Đã gắn ảnh vào khung bên phải ✨');
+        }
+        applyPhotos();
+      } catch (err) {
+        PTB.UI.showToast(err.message || 'Không thể tải ảnh lên.');
+      }
+    };
+
+    leftImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      leftInput?.click();
+    });
+    rightImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      rightInput?.click();
+    });
+
+    leftInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleFileUpload(file, 'left');
+      e.target.value = '';
+    });
+    rightInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) handleFileUpload(file, 'right');
+      e.target.value = '';
+    });
+
+    leftResetBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      PTB.Storage.clearHeroCustomPhoto('left');
+      if (leftCap) leftCap.textContent = defaultLeftCap;
+      applyPhotos();
+      PTB.UI.showToast('Đã khôi phục ảnh mẫu bên trái.');
+    });
+    rightResetBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      PTB.Storage.clearHeroCustomPhoto('right');
+      if (rightCap) rightCap.textContent = defaultRightCap;
+      applyPhotos();
+      PTB.UI.showToast('Đã khôi phục ảnh mẫu bên phải.');
+    });
+
+    if (leftCap) {
+      leftCap.addEventListener('click', (e) => e.stopPropagation());
+      leftCap.addEventListener('blur', () => {
+        const text = leftCap.textContent.trim() || defaultLeftCap;
+        PTB.Storage.saveHeroCustomPhotos({ capLeft: text });
+      });
+      leftCap.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          leftCap.blur();
+        }
+      });
+    }
+    if (rightCap) {
+      rightCap.addEventListener('click', (e) => e.stopPropagation());
+      rightCap.addEventListener('blur', () => {
+        const text = rightCap.textContent.trim() || defaultRightCap;
+        PTB.Storage.saveHeroCustomPhotos({ capRight: text });
+      });
+      rightCap.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          rightCap.blur();
+        }
+      });
+    }
+
+    const setupDragDrop = (targetEl, side) => {
+      targetEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        targetEl.classList.add('is-dragover');
+      });
+      targetEl.addEventListener('dragleave', () => {
+        targetEl.classList.remove('is-dragover');
+      });
+      targetEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        targetEl.classList.remove('is-dragover');
+        const file = e.dataTransfer?.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+          handleFileUpload(file, side);
+        }
+      });
+    };
+
+    setupDragDrop(leftImg, 'left');
+    setupDragDrop(rightImg, 'right');
+  }
+
   PTB.Home = {
     renderHeaderUser,
     renderBooksGrid,
@@ -980,6 +1183,7 @@
     openPasswordModal,
     initPasswordModalEvents,
     initAboutReveal,
+    initHeroCustomPhotos,
     normalizeVN,
     normalizeTagKey,
     formatCleanTag,

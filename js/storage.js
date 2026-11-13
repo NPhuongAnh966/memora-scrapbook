@@ -102,12 +102,22 @@
   function getUserProfile() {
     try {
       const raw = global.localStorage.getItem(USER_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          const loggedIn = Boolean(parsed.loggedIn);
+          return {
+            name: loggedIn ? (parsed.name || '').trim() : '',
+            loggedIn: loggedIn,
+            tagline: loggedIn ? (parsed.tagline || '').trim() : '',
+          };
+        }
+      }
     } catch {}
     return {
-      name: 'Minh Anh',
+      name: '',
       loggedIn: false,
-      tagline: 'Lưu giữ từng khoảnh khắc nhỏ',
+      tagline: '',
     };
   }
 
@@ -116,6 +126,42 @@
       global.localStorage.setItem(USER_KEY, JSON.stringify(profile));
     } catch {}
     return profile;
+  }
+
+  const HERO_PHOTOS_KEY = 'PTB_HERO_CUSTOM_PHOTOS';
+
+  function getHeroCustomPhotos() {
+    try {
+      const raw = global.localStorage.getItem(HERO_PHOTOS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return { left: null, right: null, capLeft: null, capRight: null };
+  }
+
+  function saveHeroCustomPhotos(data) {
+    try {
+      const current = getHeroCustomPhotos();
+      const updated = { ...current, ...data };
+      global.localStorage.setItem(HERO_PHOTOS_KEY, JSON.stringify(updated));
+      return updated;
+    } catch {}
+    return data;
+  }
+
+  function clearHeroCustomPhoto(side) {
+    try {
+      const current = getHeroCustomPhotos();
+      if (side === 'left') {
+        current.left = null;
+        current.capLeft = null;
+      } else if (side === 'right') {
+        current.right = null;
+        current.capRight = null;
+      }
+      global.localStorage.setItem(HERO_PHOTOS_KEY, JSON.stringify(current));
+      return current;
+    } catch {}
+    return {};
   }
 
   /**
@@ -244,6 +290,9 @@
     deleteAlbum,
     getUserProfile,
     saveUserProfile,
+    getHeroCustomPhotos,
+    saveHeroCustomPhotos,
+    clearHeroCustomPhoto,
     compressImageFile,
     deepClone,
     HistoryManager,

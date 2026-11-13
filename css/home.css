@@ -230,17 +230,17 @@
 
 .hero-open-book {
   width: 100%;
-  max-width: 470px;
-  aspect-ratio: 1.48 / 1;
-  background: var(--cover-leather);
-  padding: 10px 12px;
-  border-radius: 10px;
-  box-shadow: 0 24px 44px rgba(72, 52, 38, 0.25);
+  max-width: 480px;
+  aspect-ratio: 1.44 / 1;
+  background: #A3876F;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 24px 44px rgba(72, 52, 38, 0.22), 0 4px 12px rgba(72, 52, 38, 0.12);
   display: grid;
   grid-template-columns: 1fr 1fr;
   position: relative;
-  transform: rotate(-1.8deg);
-  transition: transform 0.5s ease;
+  transform: rotate(-1.5deg);
+  transition: transform 0.4s ease;
 }
 
 .hero-open-book:hover {
@@ -250,107 +250,272 @@
 .hero-open-book::after {
   content: "";
   position: absolute;
-  top: 6px;
-  bottom: 6px;
+  top: 5px;
+  bottom: 5px;
   left: 50%;
-  width: 24px;
+  width: 20px;
   transform: translateX(-50%);
   background: linear-gradient(90deg, rgba(89, 70, 56, 0), rgba(89, 70, 56, 0.22) 50%, rgba(89, 70, 56, 0));
   pointer-events: none;
-  z-index: 4;
+  z-index: 6;
+}
+
+/* Bookmark leather tab on right edge */
+.hero-bookmark-tab {
+  position: absolute;
+  top: 48px;
+  right: -9px;
+  z-index: 5;
+  pointer-events: none;
 }
 
 .hero-page {
-  background: var(--paper-ivory);
-  padding: 16px;
+  background: #FAF6ED;
+  padding: 10px 10px 14px;
   position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(184, 155, 123, 0.25);
+  border: 1px solid rgba(184, 155, 123, 0.26);
+  display: flex;
+  flex-direction: column;
 }
 
 .hero-page-left {
-  border-radius: 5px 2px 2px 5px;
-  box-shadow: inset -6px 0 14px rgba(184, 155, 123, 0.14);
+  border-radius: 4px 1px 1px 4px;
+  box-shadow: inset -6px 0 14px rgba(184, 155, 123, 0.15);
+  border-right: 1px solid rgba(184, 155, 123, 0.35);
 }
 
 .hero-page-right {
-  border-radius: 2px 5px 5px 2px;
-  box-shadow: inset 6px 0 14px rgba(184, 155, 123, 0.14);
+  border-radius: 1px 4px 4px 1px;
+  box-shadow: inset 6px 0 14px rgba(184, 155, 123, 0.15);
+  border-left: 1px solid rgba(184, 155, 123, 0.35);
 }
 
+/* Polaroids */
 .hero-polaroid {
-  background: #fff;
-  padding: 7px 7px 22px;
-  box-shadow: 0 5px 14px rgba(89, 70, 56, 0.16);
-  width: 82%;
-  margin: 12px auto 8px;
-  transform: rotate(-3.5deg);
+  background: #FFFDF9;
+  padding: 7px 7px 18px;
+  box-shadow: 0 6px 18px rgba(72, 52, 38, 0.18), 0 1px 3px rgba(72, 52, 38, 0.08);
   position: relative;
+  transition: transform 0.3s ease;
+}
+
+.hero-polaroid-left {
+  width: 86%;
+  margin: 10px auto 4px;
+  transform: rotate(2.4deg);
+}
+
+.hero-polaroid-left:hover {
+  transform: rotate(0deg) scale(1.02);
+}
+
+.hero-polaroid-right {
+  width: 80%;
+  margin: 8px 4px 0 auto;
+  transform: rotate(-4.2deg);
+}
+
+.hero-polaroid-right:hover {
+  transform: rotate(-1deg) scale(1.02);
 }
 
 .hero-polaroid-img {
   width: 100%;
-  aspect-ratio: 4/3;
+  aspect-ratio: 1.12 / 1;
   object-fit: cover;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #F5D7C6, #E5B9A8, #C8D2C0);
+  border-radius: 1px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  cursor: pointer;
 }
 
-.hero-washi {
+.hero-polaroid-img.is-dragover {
+  outline: 2px dashed #B89B7B;
+  outline-offset: -3px;
+  filter: brightness(1.05);
+}
+
+.hero-custom-uploaded-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 1px;
+  animation: fadeInPhoto 0.3s ease;
+}
+
+@keyframes fadeInPhoto {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.hero-photo-hover-overlay {
   position: absolute;
-  top: -7px;
+  inset: 0;
+  background: rgba(54, 41, 32, 0.52);
+  backdrop-filter: blur(2px);
+  color: #FFFDF7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+  font-family: var(--font-ui), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  z-index: 3;
+}
+
+.hero-polaroid:hover .hero-photo-hover-overlay {
+  opacity: 1;
+}
+
+.hero-photo-reset-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 253, 247, 0.95);
+  border: 1px solid rgba(184, 155, 123, 0.45);
+  color: #8C473E;
+  font-size: 11px;
+  font-weight: bold;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+  transition: all 0.2s ease;
+}
+
+.hero-photo-reset-btn:hover {
+  background: #EBCFCB;
+  color: #7A352D;
+  transform: scale(1.12);
+}
+
+.hero-washi-tape {
+  position: absolute;
+  top: -8px;
   left: 50%;
-  transform: translateX(-50%) rotate(2deg);
-  width: 58px;
+  transform: translateX(-50%) rotate(0.8deg);
+  width: 54px;
   height: 15px;
-  background: rgba(200, 210, 192, 0.85);
+  background: rgba(225, 212, 194, 0.92);
   border-left: 2px dotted rgba(255, 255, 255, 0.7);
   border-right: 2px dotted rgba(255, 255, 255, 0.7);
+  box-shadow: 0 1px 3px rgba(89, 70, 56, 0.12);
+  z-index: 2;
 }
 
 .hero-polaroid-cap {
   font-family: var(--font-hand);
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   text-align: center;
   margin-top: 6px;
-  color: var(--ink-brown);
+  color: #5E4B3E;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-.hero-note-card {
-  background: #FAF1D6;
-  padding: 10px 12px;
+.hero-polaroid-cap[contenteditable="true"] {
+  cursor: text;
+  outline: none;
   border-radius: 3px;
-  box-shadow: 0 3px 10px rgba(89, 70, 56, 0.12);
-  transform: rotate(2.4deg);
-  margin-top: 8px;
+  padding: 1px 4px;
+  transition: background 0.2s ease;
+}
+
+.hero-polaroid-cap[contenteditable="true"]:hover {
+  background: rgba(184, 155, 123, 0.12);
+}
+
+.hero-polaroid-cap[contenteditable="true"]:focus {
+  background: rgba(184, 155, 123, 0.24);
+}
+
+/* Quote on Left Page */
+.hero-quote-left {
   font-family: var(--font-hand);
-  font-size: 0.95rem;
-  line-height: 1.25;
-  color: var(--ink-brown);
-  border-left: 3px solid var(--pastel-pink-deep);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #9A7E68;
+  text-align: center;
+  line-height: 1.18;
+  margin-top: 14px;
+  transform: rotate(-3.2deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.hero-dried-flower {
+.hero-quote-line2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-heart-doodle {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Date Header on Right Page */
+.hero-date-header {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #9A8470;
+  text-align: center;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+/* Kraft Sticky Note on Right Page */
+.hero-sticky-note {
   position: absolute;
-  bottom: 10px;
+  bottom: 14px;
+  left: 10px;
+  background: #DEC99F;
+  padding: 8px 12px;
+  border-radius: 2px;
+  box-shadow: 0 4px 10px rgba(89, 70, 56, 0.15);
+  transform: rotate(-3.5deg);
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #534133;
+  z-index: 5;
+  transition: transform 0.25s ease;
+}
+
+.hero-sticky-note:hover {
+  transform: rotate(0deg) scale(1.04);
+}
+
+/* 5-Petal Flower Doodle */
+.hero-flower-doodle {
+  position: absolute;
+  bottom: 12px;
   right: 12px;
-  width: 62px;
-  opacity: 0.9;
-  transform: rotate(18deg);
+  width: 32px;
+  height: 32px;
   pointer-events: none;
-}
-
-.hero-stamp-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  border: 1.5px dashed var(--kraft-brown);
-  padding: 3px 7px;
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  color: var(--kraft-dark);
-  transform: rotate(6deg);
+  opacity: 0.95;
+  transform: rotate(12deg);
 }
 
 /* Section Headers */

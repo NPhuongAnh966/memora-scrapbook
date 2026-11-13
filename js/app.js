@@ -95,6 +95,7 @@
     PTB.Home.initAuthModalEvents();
     PTB.Home.initPasswordModalEvents();
     PTB.Home.initAboutReveal();
+    PTB.Home.initHeroCustomPhotos();
     initScrollNavObserver();
 
     renderHome();
@@ -514,9 +515,19 @@
         );
         if (targetEl) targetEl.classList.add('is-selected');
 
-        if (!alreadySelected || state.activeTab !== 'stickers') {
-          state.activeTab = 'stickers';
+        let targetTab = 'stickers';
+        const decor = state.activeAlbum.pages[pIdx]?.decors?.[dIdx];
+        if (decor?.type === 'free-photo') {
+          targetTab = 'photos';
+        } else if (decor?.type === 'free-text' || decor?.type === 'note') {
+          targetTab = 'text';
+        }
+
+        if (!alreadySelected || state.activeTab !== targetTab) {
+          state.activeTab = targetTab;
           syncTabButtons();
+          renderEditorPanel();
+        } else {
           renderEditorPanel();
         }
       },
@@ -555,6 +566,24 @@
     input.click();
   }
 
+  function triggerAddFreePhoto(pIdx = state.targetPageIndex) {
+    state.pendingUploadTarget = { pIdx };
+    const input = document.getElementById('freePhotoUploadInput');
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  }
+
+  function triggerReplaceFreePhoto(pIdx, dIdx) {
+    state.pendingReplaceFreePhotoTarget = { pIdx, dIdx };
+    const input = document.getElementById('replaceFreePhotoInput');
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  }
+
   async function applyFileToSlot(pIdx, sIdx, file) {
     try {
       const dataUrl = await PTB.Storage.compressImageFile(file);
@@ -569,6 +598,49 @@
       renderBookView();
       renderEditorPanel();
       showToast('Đã tải ảnh vào khung!');
+    } catch (err) {
+      showToast(err.message || 'Không thể tải ảnh này.');
+    }
+  }
+
+  async function applyFileToFreePhoto(pIdx, file) {
+    try {
+      const dataUrl = await PTB.Storage.compressImageFile(file);
+      const page = state.activeAlbum.pages[pIdx];
+      page.decors = page.decors || [];
+      const x = 30 + Math.round(Math.random() * 25);
+      const y = 25 + Math.round(Math.random() * 25);
+      const rot = -4 + Math.round(Math.random() * 8);
+      const freePhoto = PTB.Seed.makeFreePhoto(dataUrl, '', 'polaroid', x, y, rot);
+      page.decors.push(freePhoto);
+      state.targetPageIndex = pIdx;
+      state.activeTab = 'photos';
+      syncTabButtons();
+      state.selection = { type: 'decor', pageIndex: pIdx, decorIndex: page.decors.length - 1 };
+      await commitAlbumMutation(true);
+      renderBookView();
+      renderEditorPanel();
+      showToast('Đã thêm ảnh tự do lên trang — kéo thả để di chuyển!');
+    } catch (err) {
+      showToast(err.message || 'Không thể tải ảnh này.');
+    }
+  }
+
+  async function applyFileToReplaceFreePhoto(pIdx, dIdx, file) {
+    try {
+      const dataUrl = await PTB.Storage.compressImageFile(file);
+      const page = state.activeAlbum.pages[pIdx];
+      const decor = page.decors && page.decors[dIdx];
+      if (!decor) return;
+      decor.src = dataUrl;
+      decor.zoom = 1;
+      decor.panX = 0;
+      decor.panY = 0;
+      decor.imgRotate = 0;
+      await commitAlbumMutation(true);
+      renderBookView();
+      renderEditorPanel();
+      showToast('Đã thay ảnh thành công!');
     } catch (err) {
       showToast(err.message || 'Không thể tải ảnh này.');
     }
@@ -699,195 +771,452 @@
 
       bindPagesTabEvents(panel);
     } else if (state.activeTab === 'photos') {
-      const selSlotIdx =
-        state.selection.type === 'photo' && state.selection.pageIndex === state.targetPageIndex
-          ? state.selection.slotIndex
-          : 0;
-      const slot = ensureSlotExists(state.targetPageIndex, selSlotIdx);
-      const layoutDef = PTB.Assets.getLayoutById(page.layout);
+      const isFreePhoto =
+        state.selection.type === 'decor' &&
+        state.selection.pageIndex === state.targetPageIndex &&
+        page.decors &&
+        page.decors[state.selection.decorIndex]?.type === 'free-photo';
 
-      panel.innerHTML = `
-        ${targetSwitchHtml}
-        <div class="tool-group">
-          <div class="tool-section-title"><span>Khung ảnh trên trang ${state.targetPageIndex + 1}</span></div>
-          <div class="filter-pills" style="margin-bottom:12px;">
-            ${Array.from({ length: layoutDef.slots })
-              .map(
-                (_, i) =>
-                  `<button type="button" class="filter-pill ${i === selSlotIdx ? 'active' : ''}" data-pick-slot="${i}">Khung ${i + 1}</button>`
-              )
-              .join('')}
+      if (isFreePhoto) {
+        const dIdx = state.selection.decorIndex;
+        const decor = page.decors[dIdx];
+        panel.innerHTML = `
+          ${targetSwitchHtml}
+          <div class="tool-group" style="background:rgba(235,207,203,0.22);padding:12px;border-radius:10px;">
+            <div class="tool-section-title">
+              <span>Đang chọn Ảnh tự do</span>
+              <button type="button" class="btn btn-rose btn-sm" id="deleteFreePhotoBtn">Xóa ảnh</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button type="button" class="btn btn-primary btn-sm" style="flex:1;" id="replaceFreePhotoBtn">Thay ảnh khác</button>
+              <button type="button" class="btn btn-soft btn-sm" style="flex:1;" id="cropFreePhotoBtn">Cắt ảnh</button>
+            </div>
+            <div class="control-row" style="margin-top:12px;">
+              <div class="control-label"><span>Dòng chú thích</span></div>
+              <input type="text" class="vintage-input" id="freePhotoCaptionInput" placeholder="Viết chú thích ảnh..." value="${esc(decor.caption || '')}"/>
+            </div>
           </div>
 
-          <div class="upload-dropzone" id="sidebarUploadBtn">
-            <strong>${slot.src ? 'Thay đổi ảnh trong khung' : 'Tải ảnh từ thiết bị'}</strong>
-            <div style="font-size:0.76rem;color:var(--ink-muted);margin-top:4px;">Hỗ trợ JPG, JPEG, PNG, WEBP hoặc kéo thả thẳng vào khung</div>
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Kiểu khung ảnh</span></div>
+            <div class="frame-picker-grid">
+              ${PTB.Assets.FRAME_STYLES.map(
+                (f) =>
+                  `<button type="button" class="frame-choice-btn ${
+                    (decor.frame || 'polaroid') === f.id ? 'active' : ''
+                  }" data-free-frame-id="${f.id}">${f.label}</button>`
+              ).join('')}
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Kích thước & Góc xoay</span></div>
+            <div class="control-row">
+              <div class="control-label"><span>Kích thước (Scale)</span><span>${Math.round((decor.scale || 1) * 100)}%</span></div>
+              <input type="range" class="vintage-range" id="freePhotoScaleRange" min="0.45" max="2.4" step="0.05" value="${decor.scale || 1}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Góc xoay</span><span>${decor.rotate || 0}°</span></div>
+              <input type="range" class="vintage-range" id="freePhotoRotateRange" min="-180" max="180" step="2" value="${decor.rotate || 0}"/>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Căn chỉnh ảnh bên trong khung</span></div>
+            <div class="control-row">
+              <div class="control-label"><span>Phóng to lòng ảnh</span><span>${Math.round((decor.zoom || 1) * 100)}%</span></div>
+              <input type="range" class="vintage-range" id="freePhotoZoomRange" min="1" max="2.4" step="0.05" value="${decor.zoom || 1}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Vị trí ngang (Pan X)</span><span>${decor.panX || 0}px</span></div>
+              <input type="range" class="vintage-range" id="freePhotoPanXRange" min="-70" max="70" step="2" value="${decor.panX || 0}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Vị trí dọc (Pan Y)</span><span>${decor.panY || 0}px</span></div>
+              <input type="range" class="vintage-range" id="freePhotoPanYRange" min="-70" max="70" step="2" value="${decor.panY || 0}"/>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button type="button" class="btn btn-soft btn-sm" style="flex:1;" id="freePhotoRotate90Btn">↻ Xoay ảnh 90°</button>
+              <button type="button" class="btn btn-soft btn-sm" id="freePhotoResetTransformBtn">Đặt lại</button>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <button type="button" class="btn btn-soft btn-sm" style="width:100%;" id="freePhotoDeselectBtn">← Quay lại danh sách khung</button>
+          </div>
+        `;
+
+        bindFreePhotoTabEvents(panel, dIdx);
+      } else {
+        const layoutDef = PTB.Assets.getLayoutById(page.layout);
+        const selSlotIdx =
+          state.selection.type === 'photo' && state.selection.pageIndex === state.targetPageIndex
+            ? state.selection.slotIndex
+            : 0;
+        const slot = layoutDef.slots > 0 ? ensureSlotExists(state.targetPageIndex, selSlotIdx) : null;
+        const freePhotos = (page.decors || [])
+          .map((d, idx) => ({ ...d, originalIdx: idx }))
+          .filter((d) => d.type === 'free-photo');
+
+        panel.innerHTML = `
+          ${targetSwitchHtml}
+          <div class="tool-group" style="border: 1px dashed var(--rose-accent); background: rgba(212,143,124,0.06); padding: 12px; border-radius: 10px;">
+            <div class="tool-section-title" style="margin-bottom:6px;"><span>Tự do thêm ảnh (Freeform)</span></div>
+            <p style="font-size:0.78rem;color:var(--ink-muted);margin:0 0 10px;">Thêm ảnh tự do ở bất kỳ vị trí nào, có thể kéo thả, phóng to, xoay và viết chú thích trực tiếp.</p>
+            <button type="button" class="btn btn-primary btn-sm" style="width:100%;" id="addFreePhotoBtn">+ Thêm ảnh tự do lên trang</button>
+            ${
+              freePhotos.length > 0
+                ? `
+              <div style="margin-top:10px;">
+                <span style="font-size:0.74rem;color:var(--ink-muted);display:block;margin-bottom:6px;">Ảnh tự do đã thêm (${freePhotos.length}):</span>
+                <div class="filter-pills">
+                  ${freePhotos
+                    .map(
+                      (fp, i) => `
+                    <button type="button" class="filter-pill" data-pick-free-photo="${fp.originalIdx}">
+                      Ảnh tự do #${i + 1}
+                    </button>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </div>
+            `
+                : ''
+            }
           </div>
 
           ${
-            slot.src
-              ? `<div style="display:flex;gap:8px;margin-top:10px;">
-                  <button type="button" class="btn btn-soft btn-sm" style="flex:1;" id="openCropBtn">Cắt ảnh</button>
-                  <button type="button" class="btn btn-rose btn-sm" id="removeSlotPhotoBtn">Xóa ảnh</button>
-                </div>`
-              : ''
+            layoutDef.slots === 0
+              ? `
+            <div class="tool-group" style="text-align:center;padding:20px 14px;color:var(--ink-muted);">
+              <div style="font-size:1.6rem;margin-bottom:6px;">🎨</div>
+              <strong>Trang trống tự do</strong>
+              <p style="font-size:0.8rem;margin:6px 0 0;">Trang này không có khung ảnh mẫu cố định. Bạn hãy nhấn nút trên để thêm ảnh tự do hoặc sang tab Chữ / Sticker để trang trí theo ý thích!</p>
+            </div>
+          `
+              : `
+            <div class="tool-group">
+              <div class="tool-section-title"><span>Khung ảnh theo mẫu trên trang ${state.targetPageIndex + 1}</span></div>
+              <div class="filter-pills" style="margin-bottom:12px;">
+                ${Array.from({ length: layoutDef.slots })
+                  .map(
+                    (_, i) =>
+                      `<button type="button" class="filter-pill ${i === selSlotIdx ? 'active' : ''}" data-pick-slot="${i}">Khung ${i + 1}</button>`
+                  )
+                  .join('')}
+              </div>
+
+              <div class="upload-dropzone" id="sidebarUploadBtn">
+                <strong>${slot.src ? 'Thay đổi ảnh trong khung' : 'Tải ảnh từ thiết bị'}</strong>
+                <div style="font-size:0.76rem;color:var(--ink-muted);margin-top:4px;">Hỗ trợ JPG, JPEG, PNG, WEBP hoặc kéo thả thẳng vào khung</div>
+              </div>
+
+              ${
+                slot.src
+                  ? `<div style="display:flex;gap:8px;margin-top:10px;">
+                      <button type="button" class="btn btn-soft btn-sm" style="flex:1;" id="openCropBtn">Cắt ảnh</button>
+                      <button type="button" class="btn btn-rose btn-sm" id="removeSlotPhotoBtn">Xóa ảnh</button>
+                    </div>`
+                  : ''
+              }
+            </div>
+
+            <div class="tool-group">
+              <div class="tool-section-title"><span>Kiểu khung ảnh mẫu</span></div>
+              <div class="frame-picker-grid">
+                ${PTB.Assets.FRAME_STYLES.map(
+                  (f) =>
+                    `<button type="button" class="frame-choice-btn ${
+                      (slot.frame || 'polaroid') === f.id ? 'active' : ''
+                    }" data-frame-id="${f.id}">${f.label}</button>`
+                ).join('')}
+              </div>
+            </div>
+
+            <div class="tool-group">
+              <div class="tool-section-title"><span>Điều chỉnh ảnh & góc nghiêng</span></div>
+              <div class="control-row">
+                <div class="control-label"><span>Phóng to / Thu nhỏ</span><span>${Math.round((slot.zoom || 1) * 100)}%</span></div>
+                <input type="range" class="vintage-range" id="photoZoomRange" min="1" max="2.4" step="0.05" value="${slot.zoom || 1}"/>
+              </div>
+              <div class="control-row">
+                <div class="control-label"><span>Vị trí ngang (Pan X)</span><span>${slot.panX || 0}px</span></div>
+                <input type="range" class="vintage-range" id="photoPanXRange" min="-70" max="70" step="2" value="${slot.panX || 0}"/>
+              </div>
+              <div class="control-row">
+                <div class="control-label"><span>Vị trí dọc (Pan Y)</span><span>${slot.panY || 0}px</span></div>
+                <input type="range" class="vintage-range" id="photoPanYRange" min="-70" max="70" step="2" value="${slot.panY || 0}"/>
+              </div>
+              <div class="control-row">
+                <div class="control-label"><span>Độ nghiêng khung</span><span>${slot.frameRotate || 0}°</span></div>
+                <input type="range" class="vintage-range" id="frameTiltRange" min="-12" max="12" step="0.5" value="${slot.frameRotate || 0}"/>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button type="button" class="btn btn-soft btn-sm" style="flex:1;" id="rotateImg90Btn">↻ Xoay ảnh 90°</button>
+                <button type="button" class="btn btn-soft btn-sm" id="resetPhotoTransformBtn">Đặt lại</button>
+              </div>
+            </div>
+          `
           }
-        </div>
+        `;
 
-        <div class="tool-group">
-          <div class="tool-section-title"><span>Kiểu khung ảnh</span></div>
-          <div class="frame-picker-grid">
-            ${PTB.Assets.FRAME_STYLES.map(
-              (f) =>
-                `<button type="button" class="frame-choice-btn ${
-                  (slot.frame || 'polaroid') === f.id ? 'active' : ''
-                }" data-frame-id="${f.id}">${f.label}</button>`
-            ).join('')}
-          </div>
-        </div>
-
-        <div class="tool-group">
-          <div class="tool-section-title"><span>Điều chỉnh ảnh & góc nghiêng</span></div>
-          <div class="control-row">
-            <div class="control-label"><span>Phóng to / Thu nhỏ</span><span>${Math.round((slot.zoom || 1) * 100)}%</span></div>
-            <input type="range" class="vintage-range" id="photoZoomRange" min="1" max="2.4" step="0.05" value="${slot.zoom || 1}"/>
-          </div>
-          <div class="control-row">
-            <div class="control-label"><span>Vị trí ngang (Pan X)</span><span>${slot.panX || 0}px</span></div>
-            <input type="range" class="vintage-range" id="photoPanXRange" min="-70" max="70" step="2" value="${slot.panX || 0}"/>
-          </div>
-          <div class="control-row">
-            <div class="control-label"><span>Vị trí dọc (Pan Y)</span><span>${slot.panY || 0}px</span></div>
-            <input type="range" class="vintage-range" id="photoPanYRange" min="-70" max="70" step="2" value="${slot.panY || 0}"/>
-          </div>
-          <div class="control-row">
-            <div class="control-label"><span>Độ nghiêng khung</span><span>${slot.frameRotate || 0}°</span></div>
-            <input type="range" class="vintage-range" id="frameTiltRange" min="-12" max="12" step="0.5" value="${slot.frameRotate || 0}"/>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <button type="button" class="btn btn-soft btn-sm" style="flex:1;" id="rotateImg90Btn">↻ Xoay ảnh 90°</button>
-            <button type="button" class="btn btn-soft btn-sm" id="resetPhotoTransformBtn">Đặt lại</button>
-          </div>
-        </div>
-      `;
-
-      bindPhotosTabEvents(panel, selSlotIdx);
+        bindPhotosTabEvents(panel, selSlotIdx);
+      }
     } else if (state.activeTab === 'text') {
-      const ns = page.noteStyle || { font: 'var(--font-body)', size: 13, color: '#594638', align: 'left' };
-      panel.innerHTML = `
-        ${targetSwitchHtml}
-        <div class="tool-group">
-          <div class="tool-section-title"><span>Tiêu đề & Ngày tháng</span></div>
-          <div class="control-row">
-            <div class="control-label"><span>Tiêu đề trang</span></div>
-            <input type="text" class="vintage-input" id="sidebarPageTitleInput" value="${esc(page.title || '')}"/>
-          </div>
-          <div class="control-row">
-            <div class="control-label"><span>Ngày tháng / Địa điểm</span></div>
-            <input type="text" class="vintage-input" id="sidebarPageDateInput" value="${esc(page.date || '')}"/>
-          </div>
-          <div class="control-row">
-            <div class="control-label"><span>Font tiêu đề</span></div>
-            <select class="vintage-select" id="titleFontSelect">
-              <option value="var(--font-hand)" ${page.titleFont === 'var(--font-hand)' ? 'selected' : ''}>Caveat (Viết tay tự nhiên)</option>
-              <option value="var(--font-script)" ${page.titleFont === 'var(--font-script)' ? 'selected' : ''}>Dancing Script (Nét mềm)</option>
-              <option value="var(--font-display)" ${page.titleFont === 'var(--font-display)' ? 'selected' : ''}>Playfair Display (Cổ điển)</option>
-              <option value="var(--font-body)" ${page.titleFont === 'var(--font-body)' ? 'selected' : ''}>Lora (Tạp chí)</option>
-            </select>
-          </div>
-        </div>
+      const isFreeTextOrNote =
+        state.selection.type === 'decor' &&
+        state.selection.pageIndex === state.targetPageIndex &&
+        page.decors &&
+        (page.decors[state.selection.decorIndex]?.type === 'free-text' ||
+          page.decors[state.selection.decorIndex]?.type === 'note');
 
-        <div class="tool-group">
-          <div class="tool-section-title"><span>Đoạn nhật ký trên trang</span></div>
-          <textarea class="vintage-textarea" id="sidebarPageNoteInput" rows="4" placeholder="Viết dòng tâm sự hoặc lời nhắn...">${esc(page.note || '')}</textarea>
-          <div class="control-row" style="margin-top:10px;">
-            <div class="control-label"><span>Font nội dung</span></div>
-            <select class="vintage-select" id="noteFontSelect">
-              <option value="var(--font-body)" ${ns.font === 'var(--font-body)' ? 'selected' : ''}>Lora (Nhẹ nhàng)</option>
-              <option value="var(--font-ui)" ${ns.font === 'var(--font-ui)' ? 'selected' : ''}>Nunito (Hiện đại)</option>
-              <option value="var(--font-hand)" ${ns.font === 'var(--font-hand)' ? 'selected' : ''}>Caveat (Viết tay)</option>
-              <option value="var(--font-display)" ${ns.font === 'var(--font-display)' ? 'selected' : ''}>Playfair Display</option>
-            </select>
+      if (isFreeTextOrNote) {
+        const dIdx = state.selection.decorIndex;
+        const decor = page.decors[dIdx];
+        const isNote = decor.type === 'note';
+        const dFont = decor.font || 'var(--font-hand)';
+        const dSize = decor.fontSize || (isNote ? 16 : 22);
+        const dColor = decor.color || '#594638';
+        const dAlign = decor.align || (isNote ? 'left' : 'center');
+        const dBg = decor.bg || (isNote ? '#FCF3D9' : 'transparent');
+
+        panel.innerHTML = `
+          ${targetSwitchHtml}
+          <div class="tool-group" style="background:rgba(235,207,203,0.22);padding:12px;border-radius:10px;">
+            <div class="tool-section-title">
+              <span>${isNote ? 'Đang chọn Giấy Note' : 'Đang chọn Chữ tự do'}</span>
+              <button type="button" class="btn btn-rose btn-sm" id="deleteFreeTextBtn">Xóa</button>
+            </div>
+            <div class="control-row" style="margin-top:10px;">
+              <div class="control-label"><span>Nội dung chữ</span></div>
+              <textarea class="vintage-textarea" id="freeTextInput" rows="3" placeholder="Gõ nội dung chữ...">${esc(decor.text || '')}</textarea>
+            </div>
           </div>
-          <div class="control-row">
-            <div class="control-label"><span>Cỡ chữ</span><span>${ns.size || 13}px</span></div>
-            <input type="range" class="vintage-range" id="noteSizeRange" min="11" max="22" step="1" value="${ns.size || 13}"/>
+
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Font & Cỡ chữ</span></div>
+            <div class="control-row">
+              <div class="control-label"><span>Phông chữ</span></div>
+              <select class="vintage-select" id="freeTextFontSelect">
+                <option value="var(--font-hand)" ${dFont === 'var(--font-hand)' ? 'selected' : ''}>Caveat (Viết tay tự nhiên)</option>
+                <option value="var(--font-script)" ${dFont === 'var(--font-script)' ? 'selected' : ''}>Dancing Script (Nét mềm)</option>
+                <option value="var(--font-display)" ${dFont === 'var(--font-display)' ? 'selected' : ''}>Playfair Display (Cổ điển)</option>
+                <option value="var(--font-body)" ${dFont === 'var(--font-body)' ? 'selected' : ''}>Lora (Tạp chí)</option>
+                <option value="var(--font-ui)" ${dFont === 'var(--font-ui)' ? 'selected' : ''}>Nunito (Hiện đại)</option>
+              </select>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Cỡ chữ</span><span>${dSize}px</span></div>
+              <input type="range" class="vintage-range" id="freeTextSizeRange" min="12" max="48" step="1" value="${dSize}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Căn lề</span></div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+                ${['left', 'center', 'right']
+                  .map(
+                    (a) =>
+                      `<button type="button" class="frame-choice-btn ${dAlign === a ? 'active' : ''}" data-ftext-align="${a}">
+                        ${a === 'left' ? 'Trái' : a === 'center' ? 'Giữa' : 'Phải'}
+                      </button>`
+                  )
+                  .join('')}
+              </div>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Màu chữ</span></div>
+              <div class="swatch-row">
+                ${['#594638', '#846E5C', '#3E4B3B', '#8E5250', '#4A4352', '#1F2937']
+                  .map(
+                    (c) =>
+                      `<button type="button" class="color-swatch ${dColor === c ? 'active' : ''}" style="background:${c}" data-ftext-color="${c}"></button>`
+                  )
+                  .join('')}
+              </div>
+            </div>
           </div>
-          <div class="control-row">
-            <div class="control-label"><span>Căn lề</span></div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-              ${['left', 'center', 'right']
+
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Màu nền hộp chữ</span></div>
+            <div class="swatch-row" style="margin-top:6px;">
+              ${[
+                { label: 'Trong suốt', val: 'transparent', bgCss: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)' },
+                { label: 'Trắng kem', val: '#FFFDF7', bgCss: '#FFFDF7' },
+                { label: 'Vàng Note', val: '#FCF3D9', bgCss: '#FCF3D9' },
+                { label: 'Hồng phấn', val: '#F6E2DF', bgCss: '#F6E2DF' },
+                { label: 'Xanh Sage', val: '#E4EBE0', bgCss: '#E4EBE0' },
+              ]
                 .map(
-                  (a) =>
-                    `<button type="button" class="frame-choice-btn ${ns.align === a ? 'active' : ''}" data-note-align="${a}">
-                      ${a === 'left' ? 'Trái' : a === 'center' ? 'Giữa' : 'Phải'}
-                    </button>`
+                  (bg) =>
+                    `<button type="button" class="color-swatch ${dBg === bg.val ? 'active' : ''}" title="${bg.label}" style="background:${bg.bgCss};background-size:8px 8px;border:1px solid rgba(0,0,0,0.15);" data-ftext-bg="${bg.val}"></button>`
                 )
                 .join('')}
             </div>
           </div>
-          <div class="control-row">
-            <div class="control-label"><span>Màu chữ</span></div>
-            <div class="swatch-row">
-              ${['#594638', '#846E5C', '#3E4B3B', '#8E5250', '#4A4352']
-                .map(
-                  (c) =>
-                    `<button type="button" class="color-swatch ${ns.color === c ? 'active' : ''}" style="background:${c}" data-note-color="${c}"></button>`
-                )
-                .join('')}
+
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Kích thước & Góc xoay</span></div>
+            <div class="control-row">
+              <div class="control-label"><span>Tỷ lệ (Scale)</span><span>${Math.round((decor.scale || 1) * 100)}%</span></div>
+              <input type="range" class="vintage-range" id="freeTextScaleRange" min="0.45" max="2.4" step="0.05" value="${decor.scale || 1}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Góc xoay</span><span>${decor.rotate || 0}°</span></div>
+              <input type="range" class="vintage-range" id="freeTextRotateRange" min="-180" max="180" step="2" value="${decor.rotate || 0}"/>
             </div>
           </div>
-        </div>
 
-        <div class="tool-group">
-          <div class="tool-section-title">
-            <span>Thẻ kỷ niệm (Tags)</span>
-            <span style="font-size:0.75rem;color:var(--ink-muted);font-family:var(--font-ui);">${(page.tags || []).length} thẻ</span>
+          <div class="tool-group">
+            <button type="button" class="btn btn-soft btn-sm" style="width:100%;" id="freeTextDeselectBtn">← Quay lại nhật ký trang</button>
           </div>
-          <div class="editor-tags-list" id="editorTagsList">
+        `;
+
+        bindFreeTextTabEvents(panel, dIdx);
+      } else {
+        const ns = page.noteStyle || { font: 'var(--font-body)', size: 13, color: '#594638', align: 'left' };
+        const freeTexts = (page.decors || [])
+          .map((d, idx) => ({ ...d, originalIdx: idx }))
+          .filter((d) => d.type === 'free-text' || d.type === 'note');
+
+        panel.innerHTML = `
+          ${targetSwitchHtml}
+          <div class="tool-group" style="border: 1px dashed var(--rose-accent); background: rgba(212,143,124,0.06); padding: 12px; border-radius: 10px;">
+            <div class="tool-section-title" style="margin-bottom:6px;"><span>Chữ & Giấy Note tự do</span></div>
+            <p style="font-size:0.78rem;color:var(--ink-muted);margin:0 0 10px;">Thêm dòng chữ hoặc mẩu giấy note ở bất kỳ vị trí nào trên trang giấy, kéo thả và tùy biến phông chữ, màu sắc tự do.</p>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-primary btn-sm" style="flex:1;" id="addFreeTextBtn">+ Chữ tự do</button>
+              <button type="button" class="btn btn-rose btn-sm" style="flex:1;" id="addFreeNoteBtn">+ Giấy Note</button>
+            </div>
             ${
-              (page.tags || []).length
-                ? (page.tags || [])
+              freeTexts.length > 0
+                ? `
+              <div style="margin-top:10px;">
+                <span style="font-size:0.74rem;color:var(--ink-muted);display:block;margin-bottom:6px;">Chữ / Note trên trang (${freeTexts.length}):</span>
+                <div class="filter-pills">
+                  ${freeTexts
                     .map(
-                      (t, idx) => `
-                <span class="editor-tag-chip">
-                  <span>${esc(t)}</span>
-                  <button type="button" class="editor-tag-remove" data-tag-idx="${idx}" title="Xóa thẻ">✕</button>
-                </span>
-              `
+                      (ft) => `
+                    <button type="button" class="filter-pill" data-pick-free-text="${ft.originalIdx}">
+                      ${ft.type === 'note' ? '📝 Note' : '🔤 Chữ'}: "${esc((ft.text || '').slice(0, 12)) || '...'}"
+                    </button>
+                  `
                     )
-                    .join('')
-                : '<span style="font-size:0.78rem;color:var(--ink-muted);font-style:italic;">Chưa có thẻ nào cho trang này</span>'
+                    .join('')}
+                </div>
+              </div>
+            `
+                : ''
             }
           </div>
-          <div class="editor-tag-input-row" style="margin-top:8px;display:flex;gap:6px;">
-            <input type="text" class="vintage-input" id="newTagInput" placeholder="Nhập thẻ (VD: #dulich, #banbe)..." />
-            <button type="button" class="btn btn-soft btn-sm" id="addNewTagBtn" style="flex-shrink:0;">+ Thêm</button>
-          </div>
-          <div class="preset-tags-row" style="margin-top:10px;">
-            <span style="font-size:0.74rem;color:var(--ink-muted);display:block;margin-bottom:6px;">Gợi ý nhanh:</span>
-            <div class="preset-tags-chips">
-              ${['#dulich', '#banbe', '#giađinh', '#kyniem', '#chuyendi', '#cafe', '#sinhnhat', '#thiennhien']
-                .map((preset) => {
-                  const hasIt = (page.tags || []).some(
-                    (t) => PTB.Home.normalizeTagKey(t) === PTB.Home.normalizeTagKey(preset)
-                  );
-                  return `<button type="button" class="preset-tag-chip ${hasIt ? 'is-active' : ''}" data-preset-tag="${preset}">
-                    ${hasIt ? '✓ ' : '+ '}${preset}
-                  </button>`;
-                })
-                .join('')}
+
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Tiêu đề & Ngày tháng</span></div>
+            <div class="control-row">
+              <div class="control-label"><span>Tiêu đề trang</span></div>
+              <input type="text" class="vintage-input" id="sidebarPageTitleInput" value="${esc(page.title || '')}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Ngày tháng / Địa điểm</span></div>
+              <input type="text" class="vintage-input" id="sidebarPageDateInput" value="${esc(page.date || '')}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Font tiêu đề</span></div>
+              <select class="vintage-select" id="titleFontSelect">
+                <option value="var(--font-hand)" ${page.titleFont === 'var(--font-hand)' ? 'selected' : ''}>Caveat (Viết tay tự nhiên)</option>
+                <option value="var(--font-script)" ${page.titleFont === 'var(--font-script)' ? 'selected' : ''}>Dancing Script (Nét mềm)</option>
+                <option value="var(--font-display)" ${page.titleFont === 'var(--font-display)' ? 'selected' : ''}>Playfair Display (Cổ điển)</option>
+                <option value="var(--font-body)" ${page.titleFont === 'var(--font-body)' ? 'selected' : ''}>Lora (Tạp chí)</option>
+              </select>
             </div>
           </div>
-        </div>
 
-        <div class="tool-group">
-          <div class="tool-section-title"><span>Giấy Note dán thêm</span></div>
-          <button type="button" class="btn btn-rose btn-sm" style="width:100%;" id="addFreeNoteBtn">+ Dán một mảnh giấy Note mới</button>
-        </div>
-      `;
+          <div class="tool-group">
+            <div class="tool-section-title"><span>Đoạn nhật ký trên trang</span></div>
+            <textarea class="vintage-textarea" id="sidebarPageNoteInput" rows="4" placeholder="Viết dòng tâm sự hoặc lời nhắn...">${esc(page.note || '')}</textarea>
+            <div class="control-row" style="margin-top:10px;">
+              <div class="control-label"><span>Font nội dung</span></div>
+              <select class="vintage-select" id="noteFontSelect">
+                <option value="var(--font-body)" ${ns.font === 'var(--font-body)' ? 'selected' : ''}>Lora (Nhẹ nhàng)</option>
+                <option value="var(--font-ui)" ${ns.font === 'var(--font-ui)' ? 'selected' : ''}>Nunito (Hiện đại)</option>
+                <option value="var(--font-hand)" ${ns.font === 'var(--font-hand)' ? 'selected' : ''}>Caveat (Viết tay)</option>
+                <option value="var(--font-display)" ${ns.font === 'var(--font-display)' ? 'selected' : ''}>Playfair Display</option>
+              </select>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Cỡ chữ</span><span>${ns.size || 13}px</span></div>
+              <input type="range" class="vintage-range" id="noteSizeRange" min="11" max="22" step="1" value="${ns.size || 13}"/>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Căn lề</span></div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+                ${['left', 'center', 'right']
+                  .map(
+                    (a) =>
+                      `<button type="button" class="frame-choice-btn ${ns.align === a ? 'active' : ''}" data-note-align="${a}">
+                        ${a === 'left' ? 'Trái' : a === 'center' ? 'Giữa' : 'Phải'}
+                      </button>`
+                  )
+                  .join('')}
+              </div>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Màu chữ</span></div>
+              <div class="swatch-row">
+                ${['#594638', '#846E5C', '#3E4B3B', '#8E5250', '#4A4352']
+                  .map(
+                    (c) =>
+                      `<button type="button" class="color-swatch ${ns.color === c ? 'active' : ''}" style="background:${c}" data-note-color="${c}"></button>`
+                  )
+                  .join('')}
+              </div>
+            </div>
+          </div>
 
-      bindTextTabEvents(panel);
+          <div class="tool-group">
+            <div class="tool-section-title">
+              <span>Thẻ kỷ niệm (Tags)</span>
+              <span style="font-size:0.75rem;color:var(--ink-muted);font-family:var(--font-ui);">${(page.tags || []).length} thẻ</span>
+            </div>
+            <div class="editor-tags-list" id="editorTagsList">
+              ${
+                (page.tags || []).length
+                  ? (page.tags || [])
+                      .map(
+                        (t, idx) => `
+                  <span class="editor-tag-chip">
+                    <span>${esc(t)}</span>
+                    <button type="button" class="editor-tag-remove" data-tag-idx="${idx}" title="Xóa thẻ">✕</button>
+                  </span>
+                `
+                      )
+                      .join('')
+                  : '<span style="font-size:0.78rem;color:var(--ink-muted);font-style:italic;">Chưa có thẻ nào cho trang này</span>'
+              }
+            </div>
+            <div class="editor-tag-input-row" style="margin-top:8px;display:flex;gap:6px;">
+              <input type="text" class="vintage-input" id="newTagInput" placeholder="Nhập thẻ (VD: #dulich, #banbe)..." />
+              <button type="button" class="btn btn-soft btn-sm" id="addNewTagBtn" style="flex-shrink:0;">+ Thêm</button>
+            </div>
+            <div class="preset-tags-row" style="margin-top:10px;">
+              <span style="font-size:0.74rem;color:var(--ink-muted);display:block;margin-bottom:6px;">Gợi ý nhanh:</span>
+              <div class="preset-tags-chips">
+                ${['#dulich', '#banbe', '#giađinh', '#kyniem', '#chuyendi', '#cafe', '#sinhnhat', '#thiennhien']
+                  .map((preset) => {
+                    const hasIt = (page.tags || []).some(
+                      (t) => PTB.Home.normalizeTagKey(t) === PTB.Home.normalizeTagKey(preset)
+                    );
+                    return `<button type="button" class="preset-tag-chip ${hasIt ? 'is-active' : ''}" data-preset-tag="${preset}">
+                      ${hasIt ? '✓ ' : '+ '}${preset}
+                    </button>`;
+                  })
+                  .join('')}
+              </div>
+            </div>
+          </div>
+        `;
+
+        bindTextTabEvents(panel);
+      }
     } else if (state.activeTab === 'stickers') {
       const selDecor =
         state.selection.type === 'decor' && state.selection.pageIndex === state.targetPageIndex
@@ -1077,7 +1406,250 @@
     });
   }
 
+  function bindFreePhotoTabEvents(panel, dIdx) {
+    const page = state.activeAlbum.pages[state.targetPageIndex];
+    const decor = page.decors && page.decors[dIdx];
+    if (!decor) return;
+
+    const delBtn = document.getElementById('deleteFreePhotoBtn');
+    if (delBtn) {
+      delBtn.addEventListener('click', () => {
+        page.decors.splice(dIdx, 1);
+        state.selection = { type: null, pageIndex: state.targetPageIndex };
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+        showToast('Đã xóa ảnh tự do khỏi trang');
+      });
+    }
+
+    const replaceBtn = document.getElementById('replaceFreePhotoBtn');
+    if (replaceBtn) {
+      replaceBtn.addEventListener('click', () => {
+        triggerReplaceFreePhoto(state.targetPageIndex, dIdx);
+      });
+    }
+
+    const cropBtn = document.getElementById('cropFreePhotoBtn');
+    if (cropBtn) {
+      cropBtn.addEventListener('click', () => {
+        PTB.Cropper.openCropper(decor.src, (croppedUrl) => {
+          decor.src = croppedUrl;
+          decor.zoom = 1;
+          decor.panX = 0;
+          decor.panY = 0;
+          commitAlbumMutation(true);
+          renderBookView();
+          renderEditorPanel();
+          showToast('Đã cắt ảnh xong!');
+        });
+      });
+    }
+
+    const capInp = document.getElementById('freePhotoCaptionInput');
+    if (capInp) {
+      capInp.addEventListener('input', () => {
+        decor.caption = capInp.value;
+        const domCaption = document.querySelector(
+          `#bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .photo-caption`
+        );
+        if (domCaption) domCaption.textContent = capInp.value;
+      });
+      capInp.addEventListener('change', () => commitAlbumMutation(true));
+    }
+
+    panel.querySelectorAll('[data-free-frame-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        decor.frame = btn.dataset.freeFrameId;
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+      });
+    });
+
+    const bindRange = (id, key, suffix = '', factor = 1) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        decor[key] = Number(el.value);
+        const labelVal = el.parentElement?.querySelector('.control-label span:last-child');
+        if (labelVal) {
+          labelVal.textContent =
+            factor === 100 ? `${Math.round(decor[key] * 100)}%` : `${decor[key]}${suffix}`;
+        }
+        renderBookView();
+      });
+      el.addEventListener('change', () => commitAlbumMutation(true));
+    };
+
+    bindRange('freePhotoScaleRange', 'scale', '%', 100);
+    bindRange('freePhotoRotateRange', 'rotate', '°');
+    bindRange('freePhotoZoomRange', 'zoom', '%', 100);
+    bindRange('freePhotoPanXRange', 'panX', 'px');
+    bindRange('freePhotoPanYRange', 'panY', 'px');
+
+    const rot90 = document.getElementById('freePhotoRotate90Btn');
+    if (rot90) {
+      rot90.addEventListener('click', () => {
+        decor.imgRotate = ((decor.imgRotate || 0) + 90) % 360;
+        commitAlbumMutation(true);
+        renderBookView();
+      });
+    }
+
+    const resetBtn = document.getElementById('freePhotoResetTransformBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        decor.zoom = 1;
+        decor.panX = 0;
+        decor.panY = 0;
+        decor.imgRotate = 0;
+        decor.rotate = -2;
+        decor.scale = 1;
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+      });
+    }
+
+    const deselectBtn = document.getElementById('freePhotoDeselectBtn');
+    if (deselectBtn) {
+      deselectBtn.addEventListener('click', () => {
+        state.selection = { type: null, pageIndex: state.targetPageIndex };
+        renderBookView();
+        renderEditorPanel();
+      });
+    }
+  }
+
+  function bindFreeTextTabEvents(panel, dIdx) {
+    const page = state.activeAlbum.pages[state.targetPageIndex];
+    const decor = page.decors && page.decors[dIdx];
+    if (!decor) return;
+
+    const delBtn = document.getElementById('deleteFreeTextBtn');
+    if (delBtn) {
+      delBtn.addEventListener('click', () => {
+        page.decors.splice(dIdx, 1);
+        state.selection = { type: null, pageIndex: state.targetPageIndex };
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+        showToast('Đã xóa chữ tự do');
+      });
+    }
+
+    const txtInp = document.getElementById('freeTextInput');
+    if (txtInp) {
+      txtInp.addEventListener('input', () => {
+        decor.text = txtInp.value;
+        const domBox = document.querySelector(
+          `#bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .free-text-box, #bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .sticky-note-paper`
+        );
+        if (domBox) domBox.textContent = txtInp.value;
+      });
+      txtInp.addEventListener('change', () => commitAlbumMutation(true));
+    }
+
+    const fontSel = document.getElementById('freeTextFontSelect');
+    if (fontSel) {
+      fontSel.addEventListener('change', (e) => {
+        decor.font = e.target.value;
+        commitAlbumMutation(true);
+        renderBookView();
+      });
+    }
+
+    const sizeRange = document.getElementById('freeTextSizeRange');
+    if (sizeRange) {
+      sizeRange.addEventListener('input', () => {
+        decor.fontSize = Number(sizeRange.value);
+        const labelVal = sizeRange.parentElement?.querySelector('.control-label span:last-child');
+        if (labelVal) labelVal.textContent = `${sizeRange.value}px`;
+        renderBookView();
+      });
+      sizeRange.addEventListener('change', () => commitAlbumMutation(true));
+    }
+
+    panel.querySelectorAll('[data-ftext-align]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        decor.align = btn.dataset.ftextAlign;
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+      });
+    });
+
+    panel.querySelectorAll('[data-ftext-color]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        decor.color = btn.dataset.ftextColor;
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+      });
+    });
+
+    panel.querySelectorAll('[data-ftext-bg]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        decor.bg = btn.dataset.ftextBg;
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+      });
+    });
+
+    const scaleRange = document.getElementById('freeTextScaleRange');
+    if (scaleRange) {
+      scaleRange.addEventListener('input', () => {
+        decor.scale = Number(scaleRange.value);
+        const labelVal = scaleRange.parentElement?.querySelector('.control-label span:last-child');
+        if (labelVal) labelVal.textContent = `${Math.round(decor.scale * 100)}%`;
+        renderBookView();
+      });
+      scaleRange.addEventListener('change', () => commitAlbumMutation(true));
+    }
+
+    const rotRange = document.getElementById('freeTextRotateRange');
+    if (rotRange) {
+      rotRange.addEventListener('input', () => {
+        decor.rotate = Number(rotRange.value);
+        const labelVal = rotRange.parentElement?.querySelector('.control-label span:last-child');
+        if (labelVal) labelVal.textContent = `${decor.rotate}°`;
+        renderBookView();
+      });
+      rotRange.addEventListener('change', () => commitAlbumMutation(true));
+    }
+
+    const deselectBtn = document.getElementById('freeTextDeselectBtn');
+    if (deselectBtn) {
+      deselectBtn.addEventListener('click', () => {
+        state.selection = { type: null, pageIndex: state.targetPageIndex };
+        renderBookView();
+        renderEditorPanel();
+      });
+    }
+  }
+
   function bindPhotosTabEvents(panel, selSlotIdx) {
+    const addFreeBtn = document.getElementById('addFreePhotoBtn');
+    if (addFreeBtn) {
+      addFreeBtn.addEventListener('click', () => {
+        triggerAddFreePhoto(state.targetPageIndex);
+      });
+    }
+
+    panel.querySelectorAll('[data-pick-free-photo]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const dIdx = Number(btn.dataset.pickFreePhoto);
+        state.selection = { type: 'decor', pageIndex: state.targetPageIndex, decorIndex: dIdx };
+        renderBookView();
+        renderEditorPanel();
+      });
+    });
+
+    const uploadBtn = document.getElementById('sidebarUploadBtn');
+    if (!uploadBtn) return; // Layout-free with 0 template slots
+
     panel.querySelectorAll('[data-pick-slot]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const sIdx = Number(btn.dataset.pickSlot);
@@ -1087,7 +1659,7 @@
       });
     });
 
-    document.getElementById('sidebarUploadBtn').addEventListener('click', () => {
+    uploadBtn.addEventListener('click', () => {
       triggerPhotoUploadForSlot(state.targetPageIndex, selSlotIdx);
     });
 
@@ -1238,13 +1810,43 @@
       });
     });
 
-    document.getElementById('addFreeNoteBtn').addEventListener('click', () => {
-      page.decors = page.decors || [];
-      page.decors.push(PTB.Seed.makeFreeNote('Một lời nhắn nhỏ ✨', 50, 50, -2, '#FCF3D9'));
-      state.selection = { type: 'decor', pageIndex: state.targetPageIndex, decorIndex: page.decors.length - 1 };
-      commitAlbumMutation(true);
-      renderBookView();
-      showToast('Đã dán thêm giấy Note — kéo để di chuyển!');
+    const addFreeTxtBtn = document.getElementById('addFreeTextBtn');
+    if (addFreeTxtBtn) {
+      addFreeTxtBtn.addEventListener('click', () => {
+        page.decors = page.decors || [];
+        const x = 35 + Math.round(Math.random() * 30);
+        const y = 35 + Math.round(Math.random() * 30);
+        page.decors.push(PTB.Seed.makeFreeText('Gõ chữ ở đây...', x, y, 0));
+        state.selection = { type: 'decor', pageIndex: state.targetPageIndex, decorIndex: page.decors.length - 1 };
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+        showToast('Đã thêm chữ tự do — kéo thả để di chuyển!');
+      });
+    }
+
+    const addNoteBtn = document.getElementById('addFreeNoteBtn');
+    if (addNoteBtn) {
+      addNoteBtn.addEventListener('click', () => {
+        page.decors = page.decors || [];
+        const x = 35 + Math.round(Math.random() * 30);
+        const y = 35 + Math.round(Math.random() * 30);
+        page.decors.push(PTB.Seed.makeFreeNote('Một lời nhắn nhỏ ✨', x, y, -2, '#FCF3D9'));
+        state.selection = { type: 'decor', pageIndex: state.targetPageIndex, decorIndex: page.decors.length - 1 };
+        commitAlbumMutation(true);
+        renderBookView();
+        renderEditorPanel();
+        showToast('Đã dán thêm giấy Note — kéo để di chuyển!');
+      });
+    }
+
+    panel.querySelectorAll('[data-pick-free-text]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const dIdx = Number(btn.dataset.pickFreeText);
+        state.selection = { type: 'decor', pageIndex: state.targetPageIndex, decorIndex: dIdx };
+        renderBookView();
+        renderEditorPanel();
+      });
     });
 
     // Page Tags Management
@@ -1480,7 +2082,15 @@
       });
     };
     document.getElementById('headerUserPill').addEventListener('click', openProfile);
-    document.getElementById('headerLoginBtn').addEventListener('click', openProfile);
+    document.getElementById('headerLoginBtn').addEventListener('click', () => {
+      if (state.profile && state.profile.loggedIn) {
+        state.profile = PTB.Storage.saveUserProfile({ name: '', tagline: '', loggedIn: false });
+        PTB.Home.renderHeaderUser(state.profile);
+        showToast('Đã đăng xuất tài khoản.');
+      } else {
+        openProfile();
+      }
+    });
 
     // Book topbar actions
     document.getElementById('backToHomeBtn').addEventListener('click', closeBookToHome);
@@ -1546,6 +2156,26 @@
       await applyFileToSlot(pIdx, sIdx, file);
     });
 
+    const freePhotoInp = document.getElementById('freePhotoUploadInput');
+    if (freePhotoInp) {
+      freePhotoInp.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const pIdx = state.pendingUploadTarget?.pIdx ?? state.targetPageIndex;
+        await applyFileToFreePhoto(pIdx, file);
+      });
+    }
+
+    const replaceFreePhotoInp = document.getElementById('replaceFreePhotoInput');
+    if (replaceFreePhotoInp) {
+      replaceFreePhotoInp.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file || !state.pendingReplaceFreePhotoTarget) return;
+        const { pIdx, dIdx } = state.pendingReplaceFreePhotoTarget;
+        await applyFileToReplaceFreePhoto(pIdx, dIdx, file);
+      });
+    }
+
     // Mobile drawer controls & one-hand quick photo FAB
     const sidebar = document.getElementById('editorSidebar');
     document.querySelectorAll('[data-mobile-tab]').forEach((btn) => {
@@ -1567,8 +2197,16 @@
       const activePages = state.flipCtrl.getActivePageIndices(state.activeAlbum);
       const pIdx = activePages[0] ?? state.targetPageIndex;
       const page = state.activeAlbum.pages[pIdx];
-      const emptyIdx = (page.photos || []).findIndex((p) => !p.src);
-      triggerPhotoUploadForSlot(pIdx, emptyIdx >= 0 ? emptyIdx : 0);
+      const layoutDef = PTB.Assets.getLayoutById(page.layout);
+      const emptyIdx =
+        layoutDef.slots > 0
+          ? (page.photos || []).slice(0, layoutDef.slots).findIndex((p) => !p.src)
+          : -1;
+      if (emptyIdx >= 0) {
+        triggerPhotoUploadForSlot(pIdx, emptyIdx);
+      } else {
+        triggerAddFreePhoto(pIdx);
+      }
     });
 
     // Keyboard shortcuts (Arrow flip & Undo/Redo)

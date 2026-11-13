@@ -44,6 +44,41 @@
     };
   }
 
+  function makeFreePhoto(src, x = 50, y = 50, caption = '', frame = 'polaroid', rotate = -2) {
+    return {
+      id: PTB.Storage.uid('free_photo'),
+      type: 'free-photo',
+      src,
+      caption,
+      frame,
+      x,
+      y,
+      scale: 1,
+      rotate,
+      zoom: 1,
+      panX: 0,
+      panY: 0,
+      imgRotate: 0,
+    };
+  }
+
+  function makeFreeText(text = 'Gõ chữ ở đây...', x = 50, y = 50, rotate = 0, font = 'var(--font-hand)', fontSize = 22, color = '#594638', align = 'center', bg = 'transparent') {
+    return {
+      id: PTB.Storage.uid('free_text'),
+      type: 'free-text',
+      text,
+      x,
+      y,
+      scale: 1,
+      rotate,
+      font,
+      fontSize,
+      color,
+      align,
+      bg,
+    };
+  }
+
   function createSeedAlbums() {
     const art = PTB.Assets.createSampleArtPhoto;
     const now = Date.now();
@@ -406,5 +441,7 @@
     makePhotoSlot,
     makeSticker,
     makeFreeNote,
+    makeFreePhoto,
+    makeFreeText,
   };
 })(window);

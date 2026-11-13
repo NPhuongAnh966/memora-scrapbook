@@ -289,10 +289,110 @@
           itemEl.style.width = `${st.width}px`;
           itemEl.innerHTML = st.svg;
         }
+      } else if (decor.type === 'free-photo') {
+        itemEl.classList.add('is-free-photo', `frame-${decor.frame || 'polaroid'}`);
+        itemEl.style.width = '220px';
+
+        const frameBox = document.createElement('div');
+        frameBox.className = 'photo-frame-box';
+
+        const viewport = document.createElement('div');
+        viewport.className = 'photo-viewport';
+
+        if (decor.src) {
+          const img = document.createElement('img');
+          img.src = decor.src;
+          img.alt = decor.caption || 'Free photo';
+          img.style.transform = `translate(${decor.panX || 0}px, ${decor.panY || 0}px) scale(${decor.zoom || 1}) rotate(${decor.imgRotate || 0}deg)`;
+          viewport.appendChild(img);
+        } else {
+          viewport.innerHTML = `
+            <div class="photo-empty-placeholder">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <span>Chưa có ảnh</span>
+            </div>
+          `;
+        }
+
+        frameBox.appendChild(viewport);
+
+        const captionEl = document.createElement('div');
+        captionEl.className = 'photo-caption';
+        captionEl.textContent = decor.caption || (editable ? 'Thêm chú thích...' : '');
+        if (!decor.caption && editable) {
+          captionEl.style.opacity = '0.55';
+        }
+        if (editable) {
+          captionEl.contentEditable = 'true';
+          captionEl.spellcheck = false;
+          captionEl.addEventListener('focus', () => {
+            if (captionEl.textContent === 'Thêm chú thích...') {
+              captionEl.textContent = '';
+              captionEl.style.opacity = '1';
+            }
+          });
+          captionEl.addEventListener('blur', () => {
+            const val = captionEl.textContent.trim();
+            if (callbacks.onUpdateDecor) {
+              callbacks.onUpdateDecor(pageIndex, dIdx, { caption: val });
+            }
+          });
+          captionEl.addEventListener('click', (e) => e.stopPropagation());
+          captionEl.addEventListener('pointerdown', (e) => e.stopPropagation());
+        }
+
+        if (decor.frame === 'polaroid' || decor.frame === 'film') {
+          frameBox.appendChild(captionEl);
+          itemEl.appendChild(frameBox);
+        } else {
+          itemEl.appendChild(frameBox);
+          if (decor.caption || editable) {
+            itemEl.appendChild(captionEl);
+          }
+        }
+      } else if (decor.type === 'free-text') {
+        itemEl.classList.add('is-free-text');
+        const box = document.createElement('div');
+        box.className = 'free-text-box';
+        box.style.fontFamily = decor.font || 'var(--font-hand)';
+        box.style.fontSize = `${decor.fontSize || 22}px`;
+        box.style.color = decor.color || '#594638';
+        box.style.textAlign = decor.align || 'center';
+        box.style.background = decor.bg || 'transparent';
+        box.textContent = decor.text || 'Gõ chữ ở đây...';
+
+        if (editable) {
+          box.contentEditable = 'true';
+          box.spellcheck = false;
+          box.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            box.focus();
+          });
+          box.addEventListener('blur', () => {
+            if (callbacks.onUpdateDecor) {
+              callbacks.onUpdateDecor(pageIndex, dIdx, { text: box.textContent.trim() });
+            }
+          });
+          box.addEventListener('click', (e) => {
+            if (document.activeElement === box) e.stopPropagation();
+          });
+          box.addEventListener('pointerdown', (e) => {
+            if (document.activeElement === box) e.stopPropagation();
+          });
+        }
+        itemEl.appendChild(box);
       } else if (decor.type === 'note') {
         const box = document.createElement('div');
         box.className = 'free-note-box';
         box.style.background = decor.bg || '#FCF3D9';
+        if (decor.font) box.style.fontFamily = decor.font;
+        if (decor.fontSize) box.style.fontSize = `${decor.fontSize}px`;
+        if (decor.color) box.style.color = decor.color;
+        if (decor.align) box.style.textAlign = decor.align;
         box.textContent = decor.text || 'Ghi chú nhỏ...';
         if (editable) {
           box.contentEditable = 'true';
@@ -305,6 +405,12 @@
             if (callbacks.onUpdateDecor) {
               callbacks.onUpdateDecor(pageIndex, dIdx, { text: box.textContent.trim() });
             }
+          });
+          box.addEventListener('click', (e) => {
+            if (document.activeElement === box) e.stopPropagation();
+          });
+          box.addEventListener('pointerdown', (e) => {
+            if (document.activeElement === box) e.stopPropagation();
           });
         }
         itemEl.appendChild(box);
@@ -387,9 +493,11 @@
           e.target.classList.contains('decor-handle-resize')) {
         return;
       }
-      // Allow editing text directly on focused contenteditable note
-      if (e.target.isContentEditable && document.activeElement === e.target) {
-        return;
+      // Allow editing text directly on focused contenteditable note or caption
+      if (e.target.isContentEditable) {
+        if (itemEl.classList.contains('is-selected') || document.activeElement === e.target) {
+          return;
+        }
       }
 
       e.stopPropagation();

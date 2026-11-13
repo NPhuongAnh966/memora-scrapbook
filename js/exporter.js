@@ -300,6 +300,12 @@
           },
         };
       }
+      case 'layout-free': {
+        return {
+          slots: [],
+          noteBox: null,
+        };
+      }
       case 'layout-1':
       default: {
         const sw = w * 0.84;
@@ -468,6 +474,19 @@
       drawTape(fw / 2 - 24, -fh / 2 + 6, 26, '#C8D2C0');
     }
 
+    // Polaroid top washi tape
+    if (frame === 'polaroid') {
+      ctx.save();
+      ctx.translate(0, -fh / 2);
+      ctx.rotate((-0.4 * Math.PI) / 180);
+      ctx.fillStyle = 'rgba(214, 190, 160, 0.9)';
+      ctx.shadowColor = 'rgba(89, 70, 56, 0.16)';
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
+      ctx.fillRect(-45, -10, 90, 24);
+      ctx.restore();
+    }
+
     // Caption
     if (slot.caption) {
       if (frame === 'polaroid') {
@@ -556,11 +575,98 @@
           ctx.drawImage(img, -w / 2, -h / 2, w, h);
         }
       }
+    } else if (decor.type === 'free-photo') {
+      const fw = 220 * scaleFactor;
+      let fh = 260 * scaleFactor;
+      if (decor.frame === 'polaroid') {
+        fh = (220 / 1.04 + 41) * scaleFactor;
+      } else if (decor.frame === 'film') {
+        fh = 190 * scaleFactor;
+      } else {
+        fh = 220 * scaleFactor;
+      }
+      const fakeBox = {
+        x: -fw / 2,
+        y: -fh / 2,
+        w: fw,
+        h: fh,
+        defaultTilt: 0,
+      };
+      const slotCopy = { ...decor, frameRotate: 0 };
+      await drawFramedPhoto(ctx, slotCopy, fakeBox);
+    } else if (decor.type === 'free-text') {
+      const text = decor.text || 'Gõ chữ ở đây...';
+      const font = decor.font || 'var(--font-hand)';
+      const fontName = font.includes('script')
+        ? 'Dancing Script, cursive'
+        : font.includes('display')
+        ? 'Playfair Display, serif'
+        : font.includes('body')
+        ? 'Lora, serif'
+        : font.includes('ui')
+        ? 'Nunito, sans-serif'
+        : 'Caveat, cursive';
+      const fontSizePx = Math.round((decor.fontSize || 22) * scaleFactor);
+      const color = decor.color || '#594638';
+      const align = decor.align || 'center';
+      const bg = decor.bg || 'transparent';
+
+      ctx.save();
+      ctx.font = `${fontSizePx}px ${fontName}`;
+      const maxW = 340 * scaleFactor;
+      const lines = wrapTextLines(ctx, text, maxW);
+      const lineH = fontSizePx * 1.35;
+      const totalH = lines.length * lineH;
+
+      let measuredW = 0;
+      for (const line of lines) {
+        const mw = ctx.measureText(line).width;
+        if (mw > measuredW) measuredW = mw;
+      }
+      const padX = 14 * scaleFactor;
+      const padY = 8 * scaleFactor;
+      const boxW = Math.max(60 * scaleFactor, measuredW + padX * 2);
+      const boxH = totalH + padY * 2;
+
+      if (bg && bg !== 'transparent') {
+        ctx.fillStyle = bg;
+        ctx.shadowColor = 'rgba(89, 70, 56, 0.12)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 4;
+        roundedRectPath(ctx, -boxW / 2, -boxH / 2, boxW, boxH, 6 * scaleFactor);
+        ctx.fill();
+        ctx.shadowColor = 'transparent';
+      }
+
+      ctx.fillStyle = color;
+      ctx.textAlign = align;
+      let textX = 0;
+      if (align === 'left') textX = -boxW / 2 + padX;
+      else if (align === 'right') textX = boxW / 2 - padX;
+
+      let textY = -boxH / 2 + padY + fontSizePx * 0.9;
+      for (const line of lines) {
+        ctx.fillText(line, textX, textY);
+        textY += lineH;
+      }
+      ctx.restore();
     } else if (decor.type === 'note') {
       const nw = 380;
-      ctx.font = '34px Caveat, cursive';
+      const font = decor.font || 'var(--font-hand)';
+      const fontName = font.includes('script')
+        ? 'Dancing Script, cursive'
+        : font.includes('display')
+        ? 'Playfair Display, serif'
+        : font.includes('body')
+        ? 'Lora, serif'
+        : font.includes('ui')
+        ? 'Nunito, sans-serif'
+        : 'Caveat, cursive';
+      const fontSizePx = Math.round((decor.fontSize || 20) * scaleFactor);
+      ctx.font = `${fontSizePx}px ${fontName}`;
       const lines = wrapTextLines(ctx, decor.text || 'Ghi chú nhỏ...', nw - 48);
-      const nh = Math.max(96, lines.length * 42 + 40);
+      const lineH = fontSizePx * 1.35;
+      const nh = Math.max(96, lines.length * lineH + 40);
 
       ctx.shadowColor = 'rgba(89, 70, 56, 0.16)';
       ctx.shadowBlur = 16;
@@ -573,10 +679,14 @@
       ctx.fillStyle = '#D8ABA5';
       ctx.fillRect(-nw / 2, -nh / 2, 7, nh);
 
-      ctx.fillStyle = '#594638';
-      ctx.textAlign = 'left';
+      ctx.fillStyle = decor.color || '#594638';
+      ctx.textAlign = decor.align || 'left';
+      let textX = -nw / 2 + 24;
+      if (decor.align === 'center') textX = 0;
+      else if (decor.align === 'right') textX = nw / 2 - 24;
+
       lines.forEach((ln, idx) => {
-        ctx.fillText(ln, -nw / 2 + 24, -nh / 2 + 44 + idx * 42);
+        ctx.fillText(ln, textX, -nh / 2 + 40 + idx * lineH);
       });
     }
 

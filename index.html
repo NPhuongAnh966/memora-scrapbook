@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEMORA – My Memory Book</title>
+  <meta name="description" content="Mỗi bức ảnh là một kỷ niệm, mỗi trang giấy là một câu chuyện. Tạo và lưu trữ cuốn album scrapbook trực tuyến của riêng bạn." />
+  <link rel="icon" type="image/png" href="assets/memora-logo.png" />
+
+  <!-- Vintage Scrapbook Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Dancing+Script:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/book.css" />
+  <link rel="stylesheet" href="css/editor.css" />
+</head>
+<body>
+
+  <!-- ======================================================================
+       VIEW 1: HOME DESK – MY MEMORY COLLECTION
+       ====================================================================== -->
+  <div id="homeView">
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="#top" class="brand-logo">
+          <div class="brand-mark">
+            <img src="assets/memora-logo.png" alt="MEMORA – My Memory Book" class="brand-logo-img" />
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">MEMORA</span>
+            <span class="brand-sub">My Memory Book</span>
+          </div>
+        </a>
+
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <a href="#top" class="nav-link active">Trang chủ</a>
+          <a href="#collection" class="nav-link">Bộ sưu tập</a>
+          <a href="#timeline" class="nav-link" id="navTimelineLink">Dòng thời gian</a>
+          <a href="#memories" class="nav-link">Kỷ niệm</a>
+          <a href="#about" class="nav-link">Về chúng tôi</a>
+        </nav>
+
+        <div class="header-actions">
+          <div class="user-pill" id="headerUserPill" title="Hồ sơ cá nhân">
+            <div class="user-avatar" id="headerAvatar">M</div>
+            <span class="user-name-label" id="headerUserName">Your Name</span>
+          </div>
+          <button type="button" class="btn btn-soft btn-sm" id="headerLoginBtn">Đăng nhập</button>
+          <button type="button" class="btn btn-primary btn-sm" id="headerCreateBtn">+ Tạo cuốn sổ mới</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="desk-container" id="top">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div>
+          <div class="hero-eyebrow">
+            <svg class="hero-eyebrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 3 L12.8 8.7 L18.5 10.5 L12.8 12.3 L11 18 L9.2 12.3 L3.5 10.5 L9.2 8.7 Z"/>
+              <path d="M19 15 L19.8 17.2 L22 18 L19.8 18.8 L19 21 L18.2 18.8 L16 18 L18.2 17.2 Z"/>
+            </svg>
+            <span>YOUR STORIES, BEAUTIFULLY KEPT</span>
+          </div>
+          <h1 class="hero-title">Every picture<br />tells a <em class="hero-title-accent">story.</em></h1>
+          <p class="hero-subtitle">Your memories deserve a beautiful place to stay.</p>
+          <p class="hero-motto">“Mỗi bức ảnh là một kỷ niệm, mỗi trang giấy là một câu chuyện.”</p>
+          <div class="hero-cta-row">
+            <button type="button" class="btn btn-primary" id="heroCreateBtn">+ Tạo cuốn sổ mới</button>
+          </div>
+        </div>
+
+        <!-- Illustrated Open Scrapbook -->
+        <div class="hero-scrapbook-stage" aria-hidden="true">
+          <div class="hero-open-book">
+            <div class="hero-page hero-page-left">
+              <div class="hero-polaroid">
+                <div class="hero-washi"></div>
+                <div class="hero-polaroid-img">
+                  <svg viewBox="0 0 240 180" width="100%" height="100%">
+                    <defs>
+                      <linearGradient id="hs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#F6D5C1"/><stop offset="100%" stop-color="#C8D2C0"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="240" height="180" fill="url(#hs)"/>
+                    <circle cx="120" cy="82" r="28" fill="#FFF2CA"/>
+                    <path d="M0 128 Q70 105 140 128 T240 122 V180 H0 Z" fill="#8FA497"/>
+                  </svg>
+                </div>
+                <div class="hero-polaroid-cap">Sunset memories ✨</div>
+              </div>
+            </div>
+            <div class="hero-page hero-page-right">
+              <div class="hero-stamp-badge">MAY 2026</div>
+              <div style="font-family:var(--font-hand);font-size:1.25rem;margin-top:6px;">A day to remember</div>
+              <div class="hero-note-card">
+                Hôm nay trời nắng dịu, mình giữ lại bức ảnh nhỏ cùng nhành hoa khô ép trong trang giấy kem ấm áp.
+              </div>
+              <svg class="hero-dried-flower" viewBox="0 0 80 110">
+                <path d="M40 102 Q38 64 42 18" stroke="#6E7F61" stroke-width="2.4" fill="none"/>
+                <ellipse cx="42" cy="18" rx="4.5" ry="7" fill="#9E87AE"/>
+                <ellipse cx="36" cy="30" rx="4.5" ry="6.5" fill="#9E87AE" transform="rotate(-24 36 30)"/>
+                <ellipse cx="48" cy="31" rx="4.5" ry="6.5" fill="#9E87AE" transform="rotate(24 48 31)"/>
+                <ellipse cx="36" cy="43" rx="4.5" ry="6.5" fill="#9E87AE" transform="rotate(-20 36 43)"/>
+                <ellipse cx="47" cy="44" rx="4.5" ry="6.5" fill="#9E87AE" transform="rotate(20 47 44)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Collection Section -->
+      <section class="section-block collection-section" id="collection">
+        <div class="section-head collection-head">
+          <div>
+            <div class="collection-eyebrow">MY MEMORY COLLECTION</div>
+            <h2 class="section-title collection-title">Những cuốn sổ của bạn</h2>
+          </div>
+          <p class="collection-tagline">
+            Mỗi cuốn sổ là một chương nhỏ<br />
+            trong câu chuyện của riêng bạn.
+          </p>
+        </div>
+
+        <div class="discovery-bar" aria-label="Tìm kiếm và lọc kỷ niệm">
+          <div class="discovery-search-row">
+            <div class="search-input-wrap">
+              <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                type="text"
+                class="vintage-search-input"
+                id="homeSearchInput"
+                placeholder="Tìm theo tên trang, nhật ký hoặc gắn thẻ (#dulich, #banbe, #giađinh)..."
+                aria-label="Tìm kiếm kỷ niệm"
+                autocomplete="off"
+              />
+              <button type="button" class="search-clear-btn hidden" id="homeSearchClearBtn" aria-label="Xóa tìm kiếm">✕</button>
+            </div>
+
+            <div class="view-mode-toggle" role="tablist" aria-label="Chế độ xem bộ sưu tập">
+              <button type="button" class="view-mode-btn active" id="viewModeBooksBtn" data-view-mode="books" role="tab" aria-selected="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <span>Cuốn sổ</span>
+              </button>
+              <button type="button" class="view-mode-btn" id="viewModeTimelineBtn" data-view-mode="timeline" role="tab" aria-selected="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"/>
+                  <polyline points="12 7 12 12 15.5 14"/>
+                </svg>
+                <span>Dòng thời gian</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tags-filter-bar" id="homeTagsFilterBar">
+            <span class="tags-filter-label">Thẻ kỷ niệm:</span>
+            <div class="tags-pills-list" id="homeTagsPillsList"></div>
+          </div>
+        </div>
+
+        <div class="collection-toolbar">
+          <div class="filter-pills">
+            <button type="button" class="filter-pill active" data-filter="all">Tất cả</button>
+            <button type="button" class="filter-pill" data-filter="public">Công khai</button>
+            <button type="button" class="filter-pill" data-filter="private">Riêng tư</button>
+          </div>
+          <div class="collection-toolbar-right">
+            <div class="toolbar-search-status hidden" id="searchStatusFeedback">
+              <span class="search-status-text" id="searchStatusText"></span>
+              <button type="button" class="search-reset-link" id="searchResetLink">Xóa bộ lọc</button>
+            </div>
+            <button type="button" class="filter-pill hidden" id="timelineSortBtn" title="Đổi thứ tự thời gian">Mới nhất trước ↓</button>
+            <div>
+              <input type="file" id="importBackupInput" accept=".json,.ptb.json,application/json" class="hidden" />
+              <button type="button" class="btn btn-soft btn-sm" id="importBackupBtn">Nhập bản sao lưu (.ptb.json)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="matching-pages-section hidden" id="matchingPagesSection"></div>
+
+        <div class="books-desk-surface" id="booksDeskSurface">
+          <div class="books-grid" id="booksGrid"></div>
+        </div>
+
+        <div class="timeline-desk-surface hidden" id="timelineContainer"></div>
+      </section>
+
+      <!-- Memories Highlight Section -->
+      <section class="section-block" id="memories">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Những trang kỷ niệm nổi bật</h2>
+            <p class="section-desc">Nhấn vào bất kỳ tấm bưu thiếp nào để mở thẳng đến trang sổ tương ứng.</p>
+          </div>
+        </div>
+        <div class="memories-grid" id="memoriesGrid"></div>
+      </section>
+
+      <!-- About Section -->
+      <section class="section-block about-section" id="about" aria-labelledby="aboutTitle">
+        <div class="about-scrapbook-frame" data-about-reveal>
+          <!-- Decorative Washi Tapes on Frame Corners -->
+          <span class="about-corner-tape about-corner-tape-tl" aria-hidden="true"></span>
+          <span class="about-corner-tape about-corner-tape-br" aria-hidden="true"></span>
+
+          <!-- Subtle Hand-drawn Doodle Accent (top-left) -->
+          <svg class="about-doodle-stars" viewBox="0 0 64 52" aria-hidden="true">
+            <path d="M22 8 Q24 20 36 22 Q24 24 22 36 Q20 24 8 22 Q20 20 22 8 Z" fill="none" stroke="#B89B7B" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M48 26 Q49 33 56 34 Q49 35 48 42 Q47 35 40 34 Q47 33 48 26 Z" fill="none" stroke="#D8ABA5" stroke-width="1.5" stroke-linejoin="round"/>
+            <circle cx="12" cy="42" r="2" fill="#B89B7B"/>
+          </svg>
+
+          <!-- Left Column: Story & Philosophy -->
+          <div class="about-story-col">
+            <h2 class="about-title" id="aboutTitle">Về chúng tôi</h2>
+            <svg class="about-title-underline" viewBox="0 0 210 14" aria-hidden="true">
+              <path d="M4 9 Q55 3 108 8 T206 6" fill="none" stroke="#D8ABA5" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M18 12 Q88 7 175 11" fill="none" stroke="#B89B7B" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="4 4"/>
+            </svg>
+
+            <p class="about-lead">
+              “Mỗi bức ảnh là một câu chuyện, mỗi kỷ niệm đều xứng đáng được lưu giữ.”
+            </p>
+
+            <div class="about-body">
+              <p>
+                MEMORA được tạo ra từ mong muốn lưu giữ những khoảnh khắc đẹp theo một cách đặc biệt hơn. Chúng tôi tin rằng ảnh không chỉ đơn thuần là những tệp hình ảnh trong điện thoại, mà còn chứa đựng cảm xúc, câu chuyện và những kỷ niệm không thể thay thế.
+              </p>
+              <p>
+                Với MEMORA, bạn có thể tự tay tạo nên những cuốn sổ ảnh trực tuyến mang dấu ấn riêng, thoải mái sắp xếp hình ảnh, viết lời nhắn, thêm sticker và trang trí từng trang theo phong cách của mình.
+              </p>
+              <p>
+                Chúng tôi mong muốn mang đến một không gian nhỏ để bạn cất giữ những điều thân thương, lưu lại thanh xuân và dễ dàng tìm về những khoảnh khắc đẹp trong cuộc sống.
+              </p>
+            </div>
+
+            <p class="about-signature">Lưu giữ hôm nay, trân trọng ngày mai ♡</p>
+          </div>
+
+          <!-- Right Column: Open Handmade Scrapbook -->
+          <div class="about-scrapbook-col" aria-hidden="true">
+            <div class="about-book-wrap">
+              <!-- Pressed Dried Flower tucked beside the book -->
+              <svg class="about-pressed-flower-outer" viewBox="0 0 90 130">
+                <path d="M45 122 Q42 74 48 18" stroke="#7A8B6B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                <path d="M45 92 Q28 82 22 68" stroke="#889979" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <path d="M45 78 Q62 68 68 54" stroke="#889979" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <g fill="#B99BB2" opacity="0.9">
+                  <ellipse cx="48" cy="18" rx="4.5" ry="7.5" transform="rotate(-10 48 18)"/>
+                  <ellipse cx="40" cy="30" rx="4.5" ry="7" transform="rotate(-24 40 30)"/>
+                  <ellipse cx="55" cy="30" rx="4.5" ry="7" transform="rotate(24 55 30)"/>
+                  <ellipse cx="39" cy="43" rx="4.5" ry="6.5" transform="rotate(-22 39 43)"/>
+                  <ellipse cx="54" cy="44" rx="4.5" ry="6.5" transform="rotate(22 54 44)"/>
+                  <ellipse cx="41" cy="56" rx="4" ry="6" transform="rotate(-18 41 56)"/>
+                  <ellipse cx="52" cy="57" rx="4" ry="6" transform="rotate(18 52 57)"/>
+                </g>
+                <circle cx="22" cy="68" r="4" fill="#EBCFCB"/>
+                <circle cx="68" cy="54" r="3.8" fill="#EBCFCB"/>
+              </svg>
+
+              <!-- Open Scrapbook Cover & Two Pages -->
+              <div class="about-open-book">
+                <!-- Left Scrapbook Page -->
+                <div class="about-book-page about-book-page-left">
+                  <!-- Polaroid 1 -->
+                  <figure class="about-polaroid about-polaroid-1">
+                    <span class="about-washi about-washi-pink"></span>
+                    <div class="about-polaroid-photo">
+                      <svg viewBox="0 0 200 150" width="100%" height="100%">
+                        <defs>
+                          <linearGradient id="aboutSky1" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#F3D6D0"/>
+                            <stop offset="55%" stop-color="#F7E7CE"/>
+                            <stop offset="100%" stop-color="#DCE1CE"/>
+                          </linearGradient>
+                        </defs>
+                        <rect width="200" height="150" fill="url(#aboutSky1)"/>
+                        <circle cx="136" cy="52" r="22" fill="#FFF4CF"/>
+                        <path d="M0 108 Q55 86 115 106 T200 98 V150 H0 Z" fill="#C4CEB8"/>
+                        <path d="M0 124 Q70 108 140 124 T200 118 V150 H0 Z" fill="#9BB092"/>
+                        <path d="M36 114 Q42 98 48 114 M54 118 Q58 106 62 118" stroke="#6E7F61" stroke-width="1.6" fill="none"/>
+                      </svg>
+                    </div>
+                    <figcaption class="about-polaroid-caption">Những ngày đáng nhớ</figcaption>
+                  </figure>
+
+                  <!-- Polaroid 2 -->
+                  <figure class="about-polaroid about-polaroid-2">
+                    <span class="about-washi about-washi-cream"></span>
+                    <div class="about-polaroid-photo">
+                      <svg viewBox="0 0 200 150" width="100%" height="100%">
+                        <defs>
+                          <linearGradient id="aboutWarm2" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#FBF3E4"/>
+                            <stop offset="100%" stop-color="#EBD3C5"/>
+                          </linearGradient>
+                        </defs>
+                        <rect width="200" height="150" fill="url(#aboutWarm2)"/>
+                        <!-- Cozy Coffee & Open Notebook Illustration -->
+                        <rect x="28" y="88" width="144" height="62" rx="4" fill="#DFC8AE"/>
+                        <rect x="44" y="42" width="66" height="52" rx="4" fill="#FFFDF7" stroke="#B89B7B" stroke-width="1.5" transform="rotate(-6 77 68)"/>
+                        <line x1="54" y1="56" x2="96" y2="52" stroke="#D8ABA5" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="55" y1="67" x2="92" y2="63" stroke="#C5B09B" stroke-width="1.6" stroke-linecap="round"/>
+                        <circle cx="136" cy="76" r="20" fill="#FFFDF7" stroke="#A6886B" stroke-width="1.8"/>
+                        <circle cx="136" cy="76" r="14" fill="#9B7151"/>
+                        <path d="M155 72 Q166 72 166 79 Q166 86 154 85" fill="none" stroke="#A6886B" stroke-width="2"/>
+                        <path d="M132 48 Q129 40 134 34 M142 48 Q140 40 144 35" stroke="#B89B7B" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.65"/>
+                      </svg>
+                    </div>
+                    <figcaption class="about-polaroid-caption">Khoảnh khắc nhỏ, niềm vui lớn</figcaption>
+                  </figure>
+
+                  <!-- Hand-drawn swirl doodle on left page -->
+                  <svg class="about-page-doodle-left" viewBox="0 0 60 36">
+                    <path d="M6 26 Q18 8 30 20 T54 12" fill="none" stroke="#9B7D5E" stroke-width="1.5" stroke-dasharray="3 3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+
+                <!-- Right Scrapbook Page -->
+                <div class="about-book-page about-book-page-right">
+                  <!-- Vintage Vietnamese Postage Stamp Sticker -->
+                  <svg class="about-stamp-sticker" viewBox="0 0 84 96">
+                    <rect x="5" y="5" width="74" height="86" rx="3" fill="#FFFDF7" stroke="#B89B7B" stroke-width="1.8" stroke-dasharray="4 3"/>
+                    <rect x="12" y="12" width="60" height="72" fill="#EBCFCB" fill-opacity="0.45" stroke="#9B7D5E" stroke-width="1"/>
+                    <path d="M42 54 C30 46 25 38 25 31 C25 25 29 21 35 21 C38 21 40 23 42 26 C44 23 46 21 49 21 C55 21 59 25 59 31 C59 38 54 46 42 54 Z" fill="#D8ABA5" stroke="#8C6447" stroke-width="1.2"/>
+                    <text x="42" y="74" text-anchor="middle" font-family="Playfair Display, Georgia, serif" font-size="8.5" font-weight="700" fill="#594638" letter-spacing="1.2">KỶ NIỆM</text>
+                  </svg>
+
+                  <!-- Polaroid 3 -->
+                  <figure class="about-polaroid about-polaroid-3">
+                    <span class="about-washi about-washi-sage"></span>
+                    <div class="about-polaroid-photo">
+                      <svg viewBox="0 0 200 150" width="100%" height="100%">
+                        <defs>
+                          <linearGradient id="aboutMeadow3" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#F7DFDA"/>
+                            <stop offset="65%" stop-color="#F5EFE3"/>
+                            <stop offset="100%" stop-color="#CAD5C0"/>
+                          </linearGradient>
+                        </defs>
+                        <rect width="200" height="150" fill="url(#aboutMeadow3)"/>
+                        <!-- Pressed Daisy Bouquet Illustration -->
+                        <path d="M100 138 Q98 98 102 64 M100 132 Q80 102 68 74 M100 132 Q122 104 134 78" stroke="#6E8264" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                        <g transform="translate(102,58)">
+                          <g fill="#FFFDF7" stroke="#D9CCB6" stroke-width="0.8">
+                            <ellipse rx="4.2" ry="12" transform="rotate(0) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(45) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(90) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(135) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(180) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(225) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(270) translate(0,-10)"/>
+                            <ellipse rx="4.2" ry="12" transform="rotate(315) translate(0,-10)"/>
+                          </g>
+                          <circle r="6" fill="#E3B35F"/>
+                        </g>
+                        <circle cx="68" cy="70" r="9" fill="#EBCFCB" stroke="#D8ABA5" stroke-width="1"/>
+                        <circle cx="68" cy="70" r="3.5" fill="#FFFDF7"/>
+                        <circle cx="134" cy="74" r="8" fill="#EBCFCB" stroke="#D8ABA5" stroke-width="1"/>
+                        <circle cx="134" cy="74" r="3" fill="#FFFDF7"/>
+                      </svg>
+                    </div>
+                    <figcaption class="about-polaroid-caption">Thanh xuân dịu dàng</figcaption>
+                  </figure>
+
+                  <!-- Small Sticky Paper Note -->
+                  <div class="about-note-paper">
+                    <span class="about-note-tape"></span>
+                    <p class="about-note-text">“Mỗi kỷ niệm đều có một nơi để trở về.”</p>
+                  </div>
+
+                  <!-- Vintage Heart Sticker & Pressed Daisy inside Right Page -->
+                  <svg class="about-heart-sticker" viewBox="0 0 60 60">
+                    <path d="M30 50 C14 39 8 29 8 19 C8 12 14 7 21 7 C25 7 28 9 30 13 C32 9 35 7 39 7 C46 7 52 12 52 19 C52 29 46 39 30 50 Z" fill="#EBCFCB" stroke="#B67E78" stroke-width="1.8"/>
+                    <path d="M18 16 Q22 12 27 14" stroke="#FFFDF7" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  </svg>
+
+                  <svg class="about-dried-daisy-inner" viewBox="0 0 70 74">
+                    <path d="M35 42 Q34 58 37 70" stroke="#7A8D6B" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <g transform="translate(35,34)">
+                      <g fill="#FFFDF7" stroke="#D9CCB6" stroke-width="0.9">
+                        <ellipse rx="4.2" ry="12" transform="rotate(0) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(45) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(90) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(135) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(180) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(225) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(270) translate(0,-10)"/>
+                        <ellipse rx="4.2" ry="12" transform="rotate(315) translate(0,-10)"/>
+                      </g>
+                      <circle r="6" fill="#DFAD5A"/>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      MEMORA – My Memory Book • Thiết kế thủ công với phong cách Vintage Scrapbook
+    </footer>
+  </div>
+
+  <!-- ======================================================================
+       VIEW 2: OPEN BOOK READER & EDITOR WORKSPACE
+       ====================================================================== -->
+  <div id="bookView" class="book-workspace edit-mode hidden">
+    <header class="book-topbar">
+      <div class="book-topbar-left">
+        <button type="button" class="btn btn-soft btn-sm" id="backToHomeBtn">← Bàn làm việc</button>
+        <div class="book-title-chip">
+          <strong id="activeBookTitle">Our Memories</strong>
+        </div>
+        <span class="shared-cloud-badge hidden" id="sharedCloudBadge">☁️ Bản trực tuyến</span>
+        <button type="button" class="btn btn-sage btn-sm hidden" id="saveSharedCloneBtn" title="Lưu bản sao vào bàn làm việc của bạn">📥 Lưu bản sao về máy</button>
+      </div>
+
+      <div class="book-topbar-center">
+        <div class="mode-switch">
+          <button type="button" class="mode-switch-btn active" id="modeEditBtn">Chỉnh sửa</button>
+          <button type="button" class="mode-switch-btn" id="modePreviewBtn">Xem trước</button>
+        </div>
+        <button type="button" class="btn btn-soft btn-sm btn-icon" id="undoBtn" title="Hoàn tác (Ctrl+Z)" disabled>↶</button>
+        <button type="button" class="btn btn-soft btn-sm btn-icon" id="redoBtn" title="Làm lại (Ctrl+Y)" disabled>↷</button>
+      </div>
+
+      <div class="book-topbar-right">
+        <button type="button" class="btn btn-soft btn-sm" id="topbarShareBtn">Chia sẻ</button>
+        <button type="button" class="btn btn-soft btn-sm" id="fullscreenBtn" title="Toàn màn hình">⛶</button>
+      </div>
+    </header>
+
+    <div class="book-main-area">
+      <!-- Left Editing Sidebar -->
+      <aside class="editor-sidebar" id="editorSidebar">
+        <div class="editor-tabs">
+          <button type="button" class="editor-tab-btn active" data-tab="pages">
+            <span>Trang</span>
+          </button>
+          <button type="button" class="editor-tab-btn" data-tab="photos">
+            <span>Ảnh</span>
+          </button>
+          <button type="button" class="editor-tab-btn" data-tab="text">
+            <span>Chữ</span>
+          </button>
+          <button type="button" class="editor-tab-btn" data-tab="stickers">
+            <span>Trang trí</span>
+          </button>
+          <button type="button" class="editor-tab-btn" data-tab="settings">
+            <span>Bìa &amp; Xuất</span>
+          </button>
+        </div>
+        <div class="editor-panel-body" id="editorPanelBody"></div>
+      </aside>
+
+      <!-- Centered Two-Page Scrapbook Stage -->
+      <section class="book-stage-wrap">
+        <button type="button" class="flip-arrow-btn flip-arrow-prev" id="flipPrevBtn" aria-label="Trang trước">❮</button>
+        <button type="button" class="flip-arrow-btn flip-arrow-next" id="flipNextBtn" aria-label="Trang tiếp theo">❯</button>
+
+        <div class="book-shell-outer">
+          <div class="book-hardcover" id="bookHardcover">
+            <div class="book-paper-stack" id="bookPaperStack">
+              <div class="book-spine-gutter" aria-hidden="true"></div>
+              <div class="book-page-slot left-slot" id="leftPageSlot"></div>
+              <div class="book-page-slot right-slot" id="rightPageSlot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="book-bottom-bar">
+          <span id="pageSpreadIndicator">Bìa trong – Trang 1</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Mobile One-Hand Bottom Editor Bar -->
+    <div class="mobile-editor-bar">
+      <button type="button" class="btn btn-ghost btn-sm" data-mobile-tab="pages">Trang</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-mobile-tab="text">Chữ</button>
+      <button type="button" class="mobile-quick-fab" id="mobileQuickPhotoFab" title="Thêm ảnh nhanh">+</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-mobile-tab="stickers">Sticker</button>
+      <button type="button" class="btn btn-ghost btn-sm" data-mobile-tab="settings">Xuất</button>
+    </div>
+  </div>
+
+  <!-- Hidden Print Container for Full-Book PDF Export -->
+  <div id="printAllPagesContainer" class="print-all-pages" aria-hidden="true"></div>
+
+  <!-- Hidden File Input for Slot Photo Upload -->
+  <input type="file" id="slotPhotoUploadInput" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" />
+
+  <!-- ======================================================================
+       MODAL 1: COVER DESIGNER & CREATE ALBUM
+       ====================================================================== -->
+  <div id="coverDesignerModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="coverModalTitle">Tạo cuốn sổ kỷ niệm mới</h3>
+        <button type="button" class="btn btn-ghost btn-icon" id="coverDesignerCloseBtn">✕</button>
+      </div>
+      <div class="modal-body cover-designer-grid">
+        <div class="cover-preview-stage">
+          <div id="coverLivePreview"></div>
+          <input type="file" id="coverPhotoFileInput" accept="image/jpeg,image/jpg,image/png,image/webp" class="hidden" />
+          <button type="button" class="btn btn-soft btn-sm" style="margin-top:14px;" id="coverUploadPhotoBtn">📷 Chọn ảnh bìa từ máy</button>
+        </div>
+
+        <div>
+          <div class="control-row">
+            <div class="control-label"><span>Màu bìa cuốn sổ</span></div>
+            <div class="filter-pills">
+              <button type="button" class="filter-pill" data-cover-theme="leather">Nâu da</button>
+              <button type="button" class="filter-pill" data-cover-theme="cream">Kem</button>
+              <button type="button" class="filter-pill" data-cover-theme="pink">Hồng pastel</button>
+              <button type="button" class="filter-pill" data-cover-theme="sage">Xanh sage</button>
+              <button type="button" class="filter-pill" data-cover-theme="espresso">Nâu đậm</button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label"><span>Tên cuốn sổ</span></div>
+            <input type="text" class="vintage-input" id="coverTitleInput" placeholder="VD: Our Memories" />
+          </div>
+
+          <div class="control-row">
+            <div class="control-label"><span>Tên người sở hữu</span></div>
+            <input type="text" class="vintage-input" id="coverOwnerInput" placeholder="Tên của bạn" />
+          </div>
+
+          <div class="control-row">
+            <div class="control-label"><span>Ngày bắt đầu</span></div>
+            <input type="date" class="vintage-input" id="coverStartInput" />
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="control-row">
+              <div class="control-label"><span>Họa tiết trang trí bìa</span></div>
+              <select class="vintage-select" id="coverOrnamentSelect">
+                <option value="dried-lavender">Hoa oải hương khô</option>
+                <option value="dried-daisy">Hoa cúc ép</option>
+                <option value="eucalyptus-leaf">Lá bạch đàn</option>
+                <option value="vintage-heart">Trái tim vintage</option>
+                <option value="gold-star">Ngôi sao vàng</option>
+                <option value="postage-stamp">Tem thư kỷ niệm</option>
+              </select>
+            </div>
+            <div class="control-row">
+              <div class="control-label"><span>Quyền riêng tư</span></div>
+              <select class="vintage-select" id="coverPrivacySelect">
+                <option value="private">Riêng tư</option>
+                <option value="public">Công khai</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control-row" id="coverPasswordRow">
+            <div class="control-label">
+              <span id="coverPasswordLabel">Mật khẩu mở sổ riêng tư</span>
+            </div>
+            <div class="password-input-wrap">
+              <input type="password" class="vintage-input" id="coverPasswordInput" placeholder="Nhập mật khẩu bảo vệ cuốn sổ" autocomplete="new-password" />
+              <button type="button" class="password-toggle-btn" id="coverPasswordToggleBtn" title="Hiện / ẩn mật khẩu" aria-label="Hiện hoặc ẩn mật khẩu">👁️</button>
+            </div>
+            <p class="password-field-hint hidden" id="coverPasswordHint">
+              Để trống nếu bạn muốn giữ nguyên mật khẩu hiện tại.
+            </p>
+          </div>
+
+          <div class="control-row">
+            <div class="control-label"><span>Mô tả ngắn</span></div>
+            <textarea class="vintage-textarea" id="coverDescInput" rows="2" placeholder="Đôi lời giới thiệu cho cuốn album..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-soft" id="coverDesignerCancelBtn">Hủy</button>
+        <button type="button" class="btn btn-primary" id="coverDesignerSaveBtn">Lưu cuốn sổ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: CANVAS PHOTO CROPPER
+       ====================================================================== -->
+  <div id="cropModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width:680px;">
+      <div class="modal-header">
+        <h3>✂️ Cắt ảnh theo ý muốn</h3>
+        <button type="button" class="btn btn-ghost btn-icon" id="cropCloseBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="filter-pills" style="margin-bottom:12px;">
+          <button type="button" class="filter-pill active" data-crop-ratio="free">Tự do</button>
+          <button type="button" class="filter-pill" data-crop-ratio="1">Vuông (1:1)</button>
+          <button type="button" class="filter-pill" data-crop-ratio="1.3333">Ngang (4:3)</button>
+          <button type="button" class="filter-pill" data-crop-ratio="0.75">Dọc (3:4)</button>
+        </div>
+        <div class="crop-canvas-stage">
+          <canvas id="cropCanvas"></canvas>
+        </div>
+        <p style="font-size:0.8rem;color:var(--ink-muted);margin:10px 0 0;">
+          Mẹo: Kéo vùng sáng để chọn khung hình, hoặc kéo chấm tròn hồng ở góc dưới bên phải để thay đổi kích thước.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-soft" id="cropCancelBtn">Hủy</button>
+        <button type="button" class="btn btn-primary" id="cropApplyBtn">Áp dụng vùng cắt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 3: SHARE & CLOUD SYNC
+       ====================================================================== -->
+  <div id="shareModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width:540px;">
+      <div class="modal-header">
+        <h3>🔗 Chia sẻ &amp; Đồng bộ đám mây (Cloud Sync)</h3>
+        <button type="button" class="btn btn-ghost btn-icon" id="shareModalCloseBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Privacy status section -->
+        <div class="share-box-section">
+          <div class="share-box-header">
+            <span class="share-box-title">Trạng thái cuốn sổ</span>
+            <span class="share-badge" id="sharePrivacyBadge">Công khai</span>
+          </div>
+          <p id="sharePrivacyStatus" style="font-size:0.86rem;color:var(--ink-muted);margin:4px 0 10px;"></p>
+          <button type="button" class="btn btn-soft btn-sm" id="shareTogglePrivacyBtn"></button>
+        </div>
+
+        <!-- Cloud Share Section -->
+        <div class="share-box-section" id="shareCloudSection">
+          <div class="share-box-header">
+            <span class="share-box-title">Đường link trực tuyến (Supabase Cloud)</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="openSupabaseConfigBtn" title="Cài đặt kết nối Supabase">⚙️ Cài đặt Supabase</button>
+          </div>
+          <p class="share-hint-text" id="shareCloudHint">
+            Đăng tải cuốn sổ lên đám mây để tạo đường link thực sự. Bạn bè ở bất kỳ máy tính hay điện thoại nào đều mở xem được hiệu ứng lật sách 3D.
+          </p>
+
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input type="text" class="vintage-input" id="shareUrlInput" placeholder="Chưa tạo liên kết đám mây..." readonly />
+            <button type="button" class="btn btn-primary btn-sm" id="copyShareLinkBtn">Sao chép</button>
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn btn-rose btn-sm" id="publishCloudBtn" style="flex:1;">
+              ☁️ Đăng tải &amp; Tạo đường link chia sẻ
+            </button>
+          </div>
+          <div class="cloud-sync-status hidden" id="cloudSyncStatus">
+            <span class="cloud-sync-dot"></span>
+            <span id="cloudSyncStatusText">Đang đồng bộ dữ liệu...</span>
+          </div>
+        </div>
+
+        <!-- Local Backup Section -->
+        <div class="share-box-section" style="margin-bottom:0;">
+          <div class="share-box-header">
+            <span class="share-box-title">Bản sao lưu tệp máy tính</span>
+          </div>
+          <button type="button" class="btn btn-soft btn-sm" id="exportJsonBackupBtn" style="width:100%;">
+            💾 Tải bản sao lưu toàn bộ cuốn sổ (.ptb.json)
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-soft" id="shareModalDoneBtn">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 3B: SUPABASE CLOUD CONFIGURATION
+       ====================================================================== -->
+  <div id="supabaseConfigModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width:580px;">
+      <div class="modal-header">
+        <h3>⚙️ Cài đặt kết nối Supabase Cloud</h3>
+        <button type="button" class="btn btn-ghost btn-icon" id="sbConfigCloseBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.86rem;color:var(--ink-muted);margin:0 0 14px;">
+          Kết nối đến dự án Supabase của bạn để lưu trữ các cuốn sổ công khai và chia sẻ liên kết qua mạng 24/7.
+        </p>
+
+        <div class="control-row">
+          <div class="control-label"><span>Supabase Project URL</span></div>
+          <input type="url" class="vintage-input" id="sbUrlInput" placeholder="https://xyzcompany.supabase.co" />
+        </div>
+
+        <div class="control-row">
+          <div class="control-label"><span>Supabase Public Anon Key</span></div>
+          <input type="text" class="vintage-input" id="sbAnonKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-soft btn-sm" id="sbTestBtn">🔍 Kiểm tra kết nối</button>
+          <button type="button" class="btn btn-soft btn-sm" id="sbCopySqlBtn">📋 Sao chép mã SQL tạo bảng</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="sbClearBtn" style="color:#A64B42;">Xóa cấu hình</button>
+        </div>
+
+        <div class="sb-test-feedback hidden" id="sbTestFeedback"></div>
+
+        <details class="sb-sql-details">
+          <summary style="font-size:0.82rem;font-weight:700;color:var(--ink-brown);cursor:pointer;margin-bottom:8px;">
+            Hướng dẫn thiết lập Supabase nhanh (3 bước đơn giản)
+          </summary>
+          <div style="font-size:0.82rem;color:var(--ink-muted);line-height:1.5;">
+            <ol style="padding-left:18px;margin:4px 0 8px;">
+              <li>Đăng nhập <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a> và tạo một Project mới (miễn phí).</li>
+              <li>Vào mục <strong>SQL Editor</strong> &gt; Nhấn <em>New query</em> &gt; Dán đoạn mã SQL tạo bảng (bấm nút "Sao chép mã SQL" ở trên) rồi bấm <strong>Run</strong>.</li>
+              <li>Vào <strong>Project Settings</strong> &gt; <strong>API</strong> &gt; Sao chép <strong>Project URL</strong> và <strong>anon public key</strong> rồi dán vào 2 ô ở trên và bấm "Lưu kết nối".</li>
+            </ol>
+          </div>
+        </details>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-soft" id="sbConfigCancelBtn">Hủy</button>
+        <button type="button" class="btn btn-primary" id="sbConfigSaveBtn">Lưu kết nối</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 4: USER PROFILE / LOGIN
+       ====================================================================== -->
+  <div id="authModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-header">
+        <h3>🪶 Tài khoản kỷ niệm</h3>
+        <button type="button" class="btn btn-ghost btn-icon" id="authCloseBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="control-row">
+          <div class="control-label"><span>Tên hiển thị của bạn</span></div>
+          <input type="text" class="vintage-input" id="authNameInput" placeholder="VD: Minh Anh" />
+        </div>
+        <div class="control-row">
+          <div class="control-label"><span>Dòng giới thiệu ngắn</span></div>
+          <input type="text" class="vintage-input" id="authTaglineInput" placeholder="Lưu giữ từng khoảnh khắc nhỏ" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-soft" id="authCancelBtn">Đóng</button>
+        <button type="button" class="btn btn-primary" id="authSaveBtn">Lưu hồ sơ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 5: PRIVATE BOOK PASSWORD
+       ====================================================================== -->
+  <div id="passwordModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle">
+    <div class="modal-card" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 id="passwordModalTitle">🔒 Mở khóa sổ riêng tư</h3>
+        <button type="button" class="btn btn-ghost btn-icon" id="passwordCloseBtn" aria-label="Đóng">✕</button>
+      </div>
+      <form id="passwordUnlockForm" novalidate>
+        <div class="modal-body">
+          <p class="password-modal-subtitle" id="passwordModalSubtitle"></p>
+
+          <div class="control-row">
+            <div class="control-label"><span id="passwordInputLabel">Mật khẩu mở sổ</span></div>
+            <div class="password-input-wrap">
+              <input type="password" class="vintage-input" id="passwordUnlockInput" placeholder="Nhập mật khẩu..." autocomplete="current-password" />
+              <button type="button" class="password-toggle-btn" id="passwordUnlockToggleBtn" title="Hiện / ẩn mật khẩu" aria-label="Hiện hoặc ẩn mật khẩu">👁️</button>
+            </div>
+          </div>
+
+          <div class="control-row hidden" id="passwordConfirmWrap">
+            <div class="control-label"><span>Xác nhận mật khẩu</span></div>
+            <input type="password" class="vintage-input" id="passwordConfirmInput" placeholder="Nhập lại mật khẩu..." autocomplete="new-password" />
+          </div>
+
+          <p class="password-error-msg hidden" id="passwordUnlockError" role="alert"></p>
+          <p class="password-sample-hint hidden" id="passwordSampleHint">
+            Gợi ý cho sổ mẫu: mật khẩu mặc định là <strong>1234</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-soft" id="passwordCancelBtn">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">Mở khóa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Scripts -->
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/assets.js"></script>
+  <script defer src="js/seed.js"></script>
+  <script defer src="js/cloud-sync.js"></script>
+  <script defer src="js/page-renderer.js"></script>
+  <script defer src="js/page-flip.js"></script>
+  <script defer src="js/cropper.js"></script>
+  <script defer src="js/cover-designer.js"></script>
+  <script defer src="js/exporter.js"></script>
+  <script defer src="js/home.js"></script>
+  <script defer src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+/* ==========================================================================
+   PTB Online – Editor Sidebar, Sticker Library, Cropper & Cover Designer
+   ========================================================================== */
+
+/* Left Editor Sidebar (Desktop) */
+.editor-sidebar {
+  width: 312px;
+  flex-shrink: 0;
+  background: rgba(255, 253, 247, 0.94);
+  border-right: 1px solid rgba(184, 155, 123, 0.34);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 58px);
+  position: sticky;
+  top: 58px;
+  z-index: 90;
+  box-shadow: 4px 0 18px rgba(89, 70, 56, 0.06);
+}
+
+.editor-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-bottom: 1px solid rgba(184, 155, 123, 0.28);
+  background: var(--paper-cream);
+  padding: 6px;
+  gap: 4px;
+}
+
+.editor-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 10px 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--ink-muted);
+  transition: all 0.2s ease;
+}
+
+.editor-tab-btn:hover {
+  background: rgba(255, 253, 247, 0.75);
+  color: var(--ink-brown);
+}
+
+.editor-tab-btn.active {
+  background: var(--paper-ivory);
+  color: var(--ink-brown);
+  box-shadow: 0 2px 6px rgba(89, 70, 56, 0.1);
+}
+
+.editor-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.tool-section-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  margin: 0 0 10px;
+  color: var(--ink-brown);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tool-group {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed rgba(184, 155, 123, 0.32);
+}
+
+.tool-group:last-child {
+  border-bottom: none;
+}
+
+/* Active Side Selector (Left Page vs Right Page) */
+.target-page-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 14px;
+  background: var(--paper-cream);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.target-page-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.target-page-btn.active {
+  background: var(--paper-ivory);
+  color: var(--ink-brown);
+  box-shadow: 0 2px 6px rgba(89, 70, 56, 0.1);
+}
+
+/* Layout Selector Grid (8 Layouts) */
+.layouts-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.layout-thumb-btn {
+  background: var(--paper-cream);
+  border: 1.5px solid rgba(184, 155, 123, 0.36);
+  border-radius: 8px;
+  padding: 6px;
+  aspect-ratio: 3/4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.18s ease;
+}
+
+.layout-thumb-btn:hover,
+.layout-thumb-btn.active {
+  border-color: var(--ink-brown);
+  background: #FFF9EE;
+  box-shadow: 0 3px 10px rgba(89, 70, 56, 0.12);
+}
+
+.layout-thumb-btn span {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+/* Page Thumbnails Strip inside Sidebar */
+.page-thumbs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-thumb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--paper-cream);
+  border: 1px solid rgba(184, 155, 123, 0.3);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.page-thumb-row.active {
+  border-color: var(--ink-brown);
+  background: #FFF9EE;
+  box-shadow: 0 3px 10px rgba(89, 70, 56, 0.1);
+}
+
+.page-thumb-badge {
+  width: 28px;
+  height: 36px;
+  border-radius: 4px;
+  background: var(--paper-ivory);
+  border: 1px solid rgba(184, 155, 123, 0.45);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+
+.page-thumb-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.page-thumb-info strong {
+  display: block;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-thumb-info small {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.page-thumb-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.mini-icon-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--ink-muted);
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+}
+
+.mini-icon-btn:hover {
+  background: rgba(184, 155, 123, 0.22);
+  color: var(--ink-brown);
+}
+
+/* Frame Style Grid */
+.frame-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.frame-choice-btn {
+  padding: 7px 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(184, 155, 123, 0.4);
+  background: var(--paper-cream);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.frame-choice-btn.active {
+  background: var(--ink-brown);
+  color: var(--paper-ivory);
+  border-color: var(--ink-brown);
+}
+
+/* Range & Form Controls */
+.control-row {
+  margin-bottom: 10px;
+}
+
+.control-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  margin-bottom: 4px;
+}
+
+.vintage-range {
+  width: 100%;
+  accent-color: var(--ink-brown);
+}
+
+.vintage-input,
+.vintage-select,
+.vintage-textarea {
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(184, 155, 123, 0.48);
+  background: var(--paper-ivory);
+  font-size: 0.88rem;
+  color: var(--ink-brown);
+  outline: none;
+}
+
+.vintage-input:focus,
+.vintage-select:focus,
+.vintage-textarea:focus {
+  border-color: var(--ink-brown);
+  box-shadow: 0 0 0 3px rgba(184, 155, 123, 0.16);
+}
+
+/* Editor Tags Management */
+.editor-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.editor-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 10px;
+  border-radius: 999px;
+  background: var(--paper-cream);
+  border: 1px solid rgba(184, 155, 123, 0.45);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--ink-brown);
+}
+
+.editor-tag-remove {
+  border: none;
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 0.72rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.editor-tag-remove:hover {
+  color: #8E4A43;
+}
+
+.preset-tags-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.preset-tag-chip {
+  border: 1px dashed rgba(184, 155, 123, 0.45);
+  background: var(--paper-ivory);
+  color: var(--ink-muted);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.preset-tag-chip:hover {
+  background: rgba(235, 207, 203, 0.3);
+  color: var(--ink-brown);
+  border-color: var(--kraft-brown);
+}
+
+.preset-tag-chip.is-active {
+  background: var(--pastel-pink-deep);
+  border-color: var(--pastel-pink-deep);
+  color: #fff;
+  border-style: solid;
+}
+
+/* Color Swatches */
+.swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #FFFDF7;
+  box-shadow: 0 0 0 1px rgba(89, 70, 56, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.color-swatch.active {
+  transform: scale(1.16);
+  box-shadow: 0 0 0 2px var(--ink-brown);
+}
+
+/* Paper Tone & Texture Swatch Grid */
+.paper-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px 6px;
+}
+
+.paper-swatch-btn {
+  border: 1.5px solid rgba(184, 155, 123, 0.42);
+  background: var(--paper-ivory);
+  border-radius: 9px;
+  padding: 5px 3px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.paper-swatch-btn:hover {
+  border-color: var(--kraft-brown);
+  color: var(--ink-brown);
+  transform: translateY(-1px);
+}
+
+.paper-swatch-btn.active {
+  border-color: var(--ink-brown);
+  color: var(--ink-brown);
+  background: #FFF9EE;
+  box-shadow: 0 2px 8px rgba(89, 70, 56, 0.14);
+}
+
+.paper-swatch-preview {
+  width: 34px;
+  height: 26px;
+  border-radius: 5px;
+  border: 1px solid rgba(89, 70, 56, 0.2);
+  display: block;
+}
+
+.paper-swatch-preview.preview-ivory { background-color: #FFFDF7; }
+.paper-swatch-preview.preview-cream { background-color: #FAF3E6; }
+.paper-swatch-preview.preview-blush { background-color: #FCF5F3; }
+.paper-swatch-preview.preview-sage { background-color: #F4F7F1; }
+.paper-swatch-preview.preview-grid {
+  background-color: #FDFBF4;
+  background-image:
+    linear-gradient(to right, rgba(184, 155, 123, 0.34) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(184, 155, 123, 0.34) 1px, transparent 1px);
+  background-size: 7px 7px;
+}
+.paper-swatch-preview.preview-dotgrid {
+  background-color: #FCF9F2;
+  background-image: radial-gradient(rgba(155, 125, 94, 0.55) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+.paper-swatch-preview.preview-kraft {
+  background-color: #DFC9AD;
+  background-image: radial-gradient(rgba(95, 68, 42, 0.35) 0.8px, transparent 0.8px);
+  background-size: 9px 9px;
+}
+.paper-swatch-preview.preview-newspaper {
+  background-color: #ECE4D3;
+  background-image:
+    linear-gradient(to bottom, rgba(89, 70, 56, 0.22) 2px, transparent 2px, transparent 5px, rgba(89, 70, 56, 0.14) 5px, rgba(89, 70, 56, 0.14) 6px, transparent 6px),
+    linear-gradient(to right, transparent 16px, rgba(89, 70, 56, 0.2) 16px, rgba(89, 70, 56, 0.2) 17px, transparent 17px);
+  background-size: 100% 9px, 100% 100%;
+}
+
+/* Sticker Library Grid */
+.stickers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.sticker-card-btn {
+  background: var(--paper-cream);
+  border: 1px solid rgba(184, 155, 123, 0.34);
+  border-radius: 10px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.18s ease;
+}
+
+.sticker-card-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--kraft-brown);
+  background: #FFF9EE;
+  box-shadow: 0 4px 10px rgba(89, 70, 56, 0.1);
+}
+
+.sticker-card-btn svg {
+  width: 44px;
+  height: 44px;
+}
+
+.sticker-card-btn span {
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+/* Upload Dropzone */
+.upload-dropzone {
+  border: 2px dashed rgba(184, 155, 123, 0.6);
+  background: var(--paper-cream);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-dropzone:hover {
+  border-color: var(--ink-brown);
+  background: rgba(235, 207, 203, 0.2);
+}
+
+/* Crop Modal */
+.crop-canvas-stage {
+  background: #2C231D;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  max-height: 55vh;
+  position: relative;
+  user-select: none;
+  touch-action: none;
+}
+
+.crop-canvas-stage canvas {
+  max-width: 100%;
+  max-height: 55vh;
+  cursor: crosshair;
+}
+
+/* Cover Designer Modal Grid */
+.cover-designer-grid {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.cover-preview-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--paper-cream);
+  padding: 20px 16px;
+  border-radius: 14px;
+  border: 1px dashed rgba(184, 155, 123, 0.45);
+}
+
+.cover-preview-stage .book-cover-card {
+  cursor: default;
+}
+
+/* Mobile Quick Action FAB & Compact Bottom Drawer */
+.mobile-editor-bar {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .editor-sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 56px;
+    top: auto;
+    width: 100%;
+    height: 46vh;
+    border-right: none;
+    border-top: 1px solid rgba(184, 155, 123, 0.4);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 30px rgba(54, 38, 26, 0.18);
+    transform: translateY(120%);
+    transition: transform 0.28s ease;
+    z-index: 150;
+  }
+
+  .editor-sidebar.mobile-open {
+    transform: translateY(0);
+  }
+
+  .mobile-editor-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(255, 253, 247, 0.96);
+    border-top: 1px solid rgba(184, 155, 123, 0.35);
+    padding: 0 10px;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 160;
+  }
+
+  .book-workspace.is-preview .mobile-editor-bar {
+    display: none;
+  }
+
+  .mobile-quick-fab {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--ink-brown);
+    color: var(--paper-ivory);
+    border: none;
+    box-shadow: 0 6px 16px rgba(89, 70, 56, 0.3);
+    display: grid;
+    place-items: center;
+  }
+
+  .cover-designer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .book-topbar-center {
+    display: none;
+  }
+}
+
+/* Dedicated Full-Book Print Container */
+.print-all-pages {
+  display: none;
+}
+
+/* Print / Save to PDF Stylesheet */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  body {
+    background: #fff !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  #homeView,
+  #bookView,
+  .modal-backdrop,
+  .toast-container {
+    display: none !important;
+  }
+  .print-all-pages {
+    display: block !important;
+  }
+  .print-all-pages .print-page-sheet {
+    width: 100%;
+    max-width: 175mm;
+    aspect-ratio: 3 / 4;
+    margin: 0 auto;
+    page-break-after: always;
+    break-after: page;
+    display: flex;
+    box-shadow: none !important;
+    border: 1px solid rgba(184, 155, 123, 0.45);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .print-all-pages .print-page-sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .print-all-pages .scrapbook-page {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+  .decor-handle-delete,
+  .decor-handle-rotate,
+  .decor-handle-resize {
+    display: none !important;
+  }
+}

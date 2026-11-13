@@ -611,7 +611,7 @@
       const x = 30 + Math.round(Math.random() * 25);
       const y = 25 + Math.round(Math.random() * 25);
       const rot = -4 + Math.round(Math.random() * 8);
-      const freePhoto = PTB.Seed.makeFreePhoto(dataUrl, '', 'polaroid', x, y, rot);
+      const freePhoto = PTB.Seed.makeFreePhoto(dataUrl, x, y, '', 'polaroid', rot);
       page.decors.push(freePhoto);
       state.targetPageIndex = pIdx;
       state.activeTab = 'photos';
@@ -747,13 +747,16 @@
           </div>
           <div class="page-thumbs-list">
             ${album.pages
-              .map(
-                (p, idx) => `
+              .map((p, idx) => {
+                const photoCount =
+                  (p.photos || []).filter((x) => x.src).length +
+                  (p.decors || []).filter((d) => d.type === 'free-photo' && d.src).length;
+                return `
               <div class="page-thumb-row ${idx === state.targetPageIndex ? 'active' : ''}" data-jump-page="${idx}">
                 <div class="page-thumb-badge">${idx + 1}</div>
                 <div class="page-thumb-info">
                   <strong>${esc(p.title || 'Trang ' + (idx + 1))}</strong>
-                  <small>${PTB.Assets.getLayoutById(p.layout).name} • ${p.photos.filter((x) => x.src).length} ảnh</small>
+                  <small>${PTB.Assets.getLayoutById(p.layout).name} • ${photoCount} ảnh</small>
                 </div>
                 <div class="page-thumb-actions">
                   <button type="button" class="mini-icon-btn" data-page-act="up" data-idx="${idx}" title="Lên trước">↑</button>
@@ -762,8 +765,8 @@
                   <button type="button" class="mini-icon-btn" data-page-act="del" data-idx="${idx}" title="Xóa trang">✕</button>
                 </div>
               </div>
-            `
-              )
+            `;
+              })
               .join('')}
           </div>
         </div>
@@ -860,7 +863,7 @@
 
         panel.innerHTML = `
           ${targetSwitchHtml}
-          <div class="tool-group" style="border: 1px dashed var(--rose-accent); background: rgba(212,143,124,0.06); padding: 12px; border-radius: 10px;">
+          <div class="tool-group" style="border: 1px dashed var(--pastel-pink-deep); background: rgba(212,143,124,0.06); padding: 12px; border-radius: 10px;">
             <div class="tool-section-title" style="margin-bottom:6px;"><span>Tự do thêm ảnh (Freeform)</span></div>
             <p style="font-size:0.78rem;color:var(--ink-muted);margin:0 0 10px;">Thêm ảnh tự do ở bất kỳ vị trí nào, có thể kéo thả, phóng to, xoay và viết chú thích trực tiếp.</p>
             <button type="button" class="btn btn-primary btn-sm" style="width:100%;" id="addFreePhotoBtn">+ Thêm ảnh tự do lên trang</button>
@@ -1080,7 +1083,7 @@
 
         panel.innerHTML = `
           ${targetSwitchHtml}
-          <div class="tool-group" style="border: 1px dashed var(--rose-accent); background: rgba(212,143,124,0.06); padding: 12px; border-radius: 10px;">
+          <div class="tool-group" style="border: 1px dashed var(--pastel-pink-deep); background: rgba(212,143,124,0.06); padding: 12px; border-radius: 10px;">
             <div class="tool-section-title" style="margin-bottom:6px;"><span>Chữ & Giấy Note tự do</span></div>
             <p style="font-size:0.78rem;color:var(--ink-muted);margin:0 0 10px;">Thêm dòng chữ hoặc mẩu giấy note ở bất kỳ vị trí nào trên trang giấy, kéo thả và tùy biến phông chữ, màu sắc tự do.</p>
             <div style="display:flex;gap:8px;">
@@ -1544,7 +1547,7 @@
       txtInp.addEventListener('input', () => {
         decor.text = txtInp.value;
         const domBox = document.querySelector(
-          `#bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .free-text-box, #bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .sticky-note-paper`
+          `#bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .free-text-box, #bookPaperStack .decor-item[data-page-index="${state.targetPageIndex}"][data-decor-index="${dIdx}"] .free-note-box`
         );
         if (domBox) domBox.textContent = txtInp.value;
       });

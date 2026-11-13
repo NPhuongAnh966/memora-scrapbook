@@ -488,22 +488,23 @@
     }
 
     // Caption
-    if (slot.caption) {
+    const cap = String(slot.caption || '').trim();
+    if (cap && cap !== 'Thêm chú thích...') {
       if (frame === 'polaroid') {
         ctx.fillStyle = '#594638';
         ctx.font = 'bold 30px Caveat, cursive';
         ctx.textAlign = 'center';
-        ctx.fillText(slot.caption, 0, fh / 2 - 22, vw);
+        ctx.fillText(cap, 0, fh / 2 - 22, vw);
       } else if (frame === 'film') {
         ctx.fillStyle = '#E7D5BE';
         ctx.font = '18px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(slot.caption, 0, fh / 2 - 14, vw);
+        ctx.fillText(cap, 0, fh / 2 - 14, vw);
       } else {
         ctx.fillStyle = '#594638';
         ctx.font = '26px Caveat, cursive';
         ctx.textAlign = 'center';
-        ctx.fillText(slot.caption, 0, fh / 2 + 26, fw);
+        ctx.fillText(cap, 0, fh / 2 + 24, fw);
       }
     }
 
@@ -577,13 +578,33 @@
       }
     } else if (decor.type === 'free-photo') {
       const fw = 220 * scaleFactor;
-      let fh = 260 * scaleFactor;
+      const cap = String(decor.caption || '').trim();
+      const hasCap = cap && cap !== 'Thêm chú thích...';
+      let fh;
       if (decor.frame === 'polaroid') {
-        fh = (220 / 1.04 + 41) * scaleFactor;
+        const vw = fw - 36 * scaleFactor;
+        const vh = vw / 1.04;
+        fh = vh + 88 * scaleFactor;
       } else if (decor.frame === 'film') {
-        fh = 190 * scaleFactor;
+        const vw = fw - 80 * scaleFactor;
+        const vh = vw / 1.04;
+        fh = vh + (hasCap ? 58 : 32) * scaleFactor;
+      } else if (decor.frame === 'vintage') {
+        const vw = fw - 36 * scaleFactor;
+        const vh = vw / 1.04;
+        fh = vh + 36 * scaleFactor;
+      } else if (decor.frame === 'minimal') {
+        const vw = fw - 20 * scaleFactor;
+        const vh = vw / 1.04;
+        fh = vh + 20 * scaleFactor;
+      } else if (decor.frame === 'taped') {
+        const vw = fw;
+        const vh = vw / 1.04;
+        fh = vh;
       } else {
-        fh = 220 * scaleFactor;
+        const vw = fw - 28 * scaleFactor;
+        const vh = vw / 1.04;
+        fh = vh + 28 * scaleFactor;
       }
       const fakeBox = {
         x: -fw / 2,
@@ -592,7 +613,11 @@
         h: fh,
         defaultTilt: 0,
       };
-      const slotCopy = { ...decor, frameRotate: 0 };
+      const slotCopy = {
+        ...decor,
+        caption: hasCap ? cap : '',
+        frameRotate: 0,
+      };
       await drawFramedPhoto(ctx, slotCopy, fakeBox);
     } else if (decor.type === 'free-text') {
       const text = decor.text || 'Gõ chữ ở đây...';

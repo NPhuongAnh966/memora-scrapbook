@@ -143,6 +143,9 @@
       (p.photos || []).forEach((s) => {
         if (s.src) total++;
       });
+      (p.decors || []).forEach((d) => {
+        if (d.type === 'free-photo' && d.src) total++;
+      });
     });
     return total;
   }
@@ -362,7 +365,9 @@
       .filter((album) => isAlbumAccessible(album, unlockedIds))
       .forEach((album) => {
         (album.pages || []).forEach((page, pIdx) => {
-          const firstPhoto = (page.photos || []).find((p) => p.src);
+          const firstPhoto =
+            (page.photos || []).find((p) => p.src) ||
+            (page.decors || []).find((d) => d.type === 'free-photo' && d.src);
           if (firstPhoto && highlights.length < 8) {
             highlights.push({
               albumId: album.id,
@@ -641,7 +646,9 @@
       const noteMatch = normalizeVN(page.note).includes(normQ);
       const dateMatch = normalizeVN(page.date).includes(normQ);
       const albumMatch = normalizeVN(album.title).includes(normQ);
-      const captionMatch = (page.photos || []).some((p) => normalizeVN(p.caption).includes(normQ));
+      const captionMatch =
+        (page.photos || []).some((p) => normalizeVN(p.caption).includes(normQ)) ||
+        (page.decors || []).some((d) => d.type === 'free-photo' && normalizeVN(d.caption).includes(normQ));
       const tagMatch = tags.some(
         (t) => normalizeVN(t).includes(normQ) || (normQCompact && normalizeTagKey(t).includes(normQCompact))
       );
@@ -724,7 +731,9 @@
 
         const tags = extractPageAllTags(page);
         const dateInfo = parseDateInfo(page.date, album.startDate || album.createdAt);
-        const firstPhoto = (page.photos || []).find((p) => p.src);
+        const firstPhoto =
+          (page.photos || []).find((p) => p.src) ||
+          (page.decors || []).find((d) => d.type === 'free-photo' && d.src);
 
         if (hasSearch) {
           matchingPages.push({
@@ -755,6 +764,25 @@
             src: slot.src,
             caption: slot.caption || '',
             frame: slot.frame || 'polaroid',
+            dateInfo,
+          });
+        });
+
+        (page.decors || []).forEach((decor, dIdx) => {
+          if (decor.type !== 'free-photo' || !decor.src) return;
+          timelinePhotos.push({
+            id: `${album.id}_p${pIdx}_d${dIdx}`,
+            albumId: album.id,
+            albumTitle: album.title,
+            albumCoverTheme: album.coverTheme || 'leather',
+            pageIndex: pIdx,
+            pageTitle: page.title || `Trang ${pIdx + 1}`,
+            date: page.date || dateInfo.displayDate,
+            note: page.note || '',
+            tags,
+            src: decor.src,
+            caption: decor.caption || '',
+            frame: decor.frame || 'polaroid',
             dateInfo,
           });
         });
@@ -1175,6 +1203,7 @@
   }
 
   PTB.Home = {
+    countAlbumPhotos,
     renderHeaderUser,
     renderBooksGrid,
     renderMemoriesStrip,
